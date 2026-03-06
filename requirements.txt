@@ -1,0 +1,49 @@
+# ── Web framework ────────────────────────────────────────────────────────────
+fastapi==0.135.1
+uvicorn[standard]==0.41.0
+
+# ── Database ─────────────────────────────────────────────────────────────────
+sqlalchemy==2.0.48
+asyncpg==0.31.0
+aiosqlite==0.22.1
+alembic==1.18.4
+
+# ── Validation & config ───────────────────────────────────────────────────────
+pydantic==2.12.5
+pydantic-settings==2.13.1
+
+# ── Auth & security ───────────────────────────────────────────────────────────
+python-jose[cryptography]==3.5.0
+passlib[bcrypt]==1.7.4
+cryptography==46.0.5
+
+# ── Rate limiting ─────────────────────────────────────────────────────────────
+slowapi==0.1.9
+
+# ── File handling ─────────────────────────────────────────────────────────────
+python-magic==0.4.27
+python-multipart==0.0.22
+
+# ── Input sanitisation ────────────────────────────────────────────────────────
+bleach==6.3.0
+
+# ── Logging ───────────────────────────────────────────────────────────────────
+python-json-logger==4.0.0
+
+# ── Env ───────────────────────────────────────────────────────────────────────
+python-dotenv==1.2.2
+
+# ── LLM client ────────────────────────────────────────────────────────────────
+openai==2.26.0
+
+# ── File parsing (Phase 4) ────────────────────────────────────────────────────
+pdfplumber==0.11.9
+python-docx==1.2.0
+pdf2image==1.17.0
+pytesseract==0.3.13
+
+# ── NLP & scoring (Phase 5) ───────────────────────────────────────────────────
+# Pinned — updating mid-project risks NLP compatibility
+spacy==3.8.3
+sentence-transformers==3.3.1
+scikit-learn==1.6.0
