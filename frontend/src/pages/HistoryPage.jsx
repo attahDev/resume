@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { getHistory } from '../api/resume.js'
 import Nav from '../components/Nav.jsx'
+import DeltaView from '../components/DeltaView.jsx'
 
 function scoreColor(n) {
   if (n >= 90) return 'var(--indigo)'
@@ -17,30 +18,26 @@ export default function HistoryPage() {
 
   useEffect(() => {
     getHistory()
-      .then(d  => setItems(d))
-      .catch(() => setError('Failed to load history — please refresh'))
+      .then(d => setItems(d))
+      .catch(() => setError('Failed to load history'))
       .finally(() => setLoading(false))
   }, [])
 
   return (
     <div className="page">
-      <Nav />
-      <div className="container" style={{ paddingTop: 48, paddingBottom: 80 }}>
+      <Nav links={[]} />
+      <div className="container" style={{ paddingTop: 80, paddingBottom: 80 }}>
 
         <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: 32 }}>
           <h1 style={{ fontSize: 28 }}>Analysis History</h1>
           <Link to="/app" className="btn btn-primary" style={{ padding: '8px 18px' }}>+ New Analysis</Link>
         </div>
 
-        {loading && (
-          <p style={{ color: 'var(--text-dim)', fontSize: 13 }}>Loading...</p>
-        )}
-        {error && (
-          <div className="banner banner-error"><span>⚠</span><span>{error}</span></div>
-        )}
+        {loading && <p style={{ color: 'var(--text-dim)', fontSize: 13 }}>Loading...</p>}
+        {error   && <div className="banner banner-error"><span>⚠</span><span>{error}</span></div>}
         {!loading && !error && items.length === 0 && (
-          <div style={{ textAlign: 'center', padding: '64px 0' }}>
-            <p style={{ color: 'var(--text-dim)', marginBottom: 20 }}>No analyses yet.</p>
+          <div style={{ textAlign: 'center', padding: '60px 0' }}>
+            <p style={{ color: 'var(--text-dim)', marginBottom: 16 }}>No analyses yet.</p>
             <Link to="/app" className="btn btn-primary">Run your first analysis →</Link>
           </div>
         )}
@@ -52,7 +49,7 @@ export default function HistoryPage() {
               className="card"
               style={{
                 display: 'grid',
-                gridTemplateColumns: '52px 1fr auto',
+                gridTemplateColumns: '56px 1fr auto',
                 gap: 16,
                 alignItems: 'center',
                 animation: `fadeIn 0.3s ease ${i * 0.05}s both`,
@@ -60,23 +57,21 @@ export default function HistoryPage() {
             >
               <div style={{ textAlign: 'center' }}>
                 <span style={{
-                  fontFamily: 'var(--font-serif)', fontSize: 22, fontWeight: 900,
-                  color: item.overall_score != null ? scoreColor(item.overall_score) : 'var(--text-ghost)',
+                  fontFamily: 'var(--font-serif)',
+                  fontSize: 22,
+                  fontWeight: 900,
+                  color: scoreColor(item.overall_score),
                 }}>
                   {item.overall_score ?? '—'}
                 </span>
               </div>
               <div>
-                <p style={{ fontWeight: 600, fontSize: 13, marginBottom: 3 }}>
-                  {item.job_title || 'Untitled Role'}
-                </p>
+                <p style={{ fontWeight: 600, fontSize: 13, marginBottom: 2 }}>{item.job_title || 'Untitled Role'}</p>
                 <p style={{ fontSize: 11, color: 'var(--text-dim)' }}>
                   {item.company || 'Unknown'} · {new Date(item.created_at).toLocaleDateString()}
                 </p>
               </div>
-              <span className={`badge badge-${
-                item.status === 'complete' ? 'green' : item.status === 'failed' ? 'red' : 'dim'
-              }`}>
+              <span className={`badge badge-${item.status === 'complete' ? 'green' : item.status === 'failed' ? 'red' : 'dim'}`}>
                 {item.status}
               </span>
             </div>

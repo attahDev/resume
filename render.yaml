@@ -1,0 +1,53 @@
+services:
+  # ── Backend API (Docker on Render) ───────────────────────
+  - type: web
+    name: resumeai-api
+    runtime: docker              # tells Render to use our Dockerfile
+    dockerfilePath: ./Dockerfile # relative to repo root
+    dockerContext: .             # build context = repo root
+
+    # Render free tier: 512MB RAM, shared CPU
+    # Upgrade to Starter ($7/mo) for always-on + more RAM
+    plan: free
+
+    # Health check path — Render uses this to confirm deploy success
+    healthCheckPath: /health
+
+    # Environment variables
+    # sync: false = set manually in Render dashboard (never in git)
+    envVars:
+      - key: SECRET_KEY
+        sync: false
+
+      - key: ENCRYPTION_KEY
+        sync: false
+
+      - key: GROQ_API_KEY
+        sync: false
+
+      - key: DATABASE_URL
+        sync: false        # Neon pooled connection string
+
+      - key: DATABASE_URL_DIRECT
+        sync: false        # Neon direct connection (Alembic only)
+
+      - key: ALLOWED_ORIGINS
+        sync: false        # your frontend URL, e.g. https://resumeai.vercel.app
+
+      - key: ENV
+        value: production
+
+      - key: MODEL_VERSION
+        value: llama-3.3-70b-versatile
+
+      - key: LLM_BASE_URL
+        value: https://api.groq.com/openai/v1
+
+      - key: MAX_FILE_SIZE_MB
+        value: "5"
+
+      - key: DAILY_FREE_LIMIT
+        value: "50"
+
+      - key: GUEST_LIFETIME_LIMIT
+        value: "5"

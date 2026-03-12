@@ -1,0 +1,97 @@
+
+
+# ─────────────────────────────────────────────────────────────
+# ResumeAI — Local Development Stack
+#
+# Usage:
+#   docker compose up              → backend + frontend
+#   docker compose up backend      → backend only
+#   docker compose --profile db up → add local Postgres
+#
+# Backend runs at:  http://localhost:8000
+# Frontend runs at: http://localhost:5173
+# Swagger docs:     http://localhost:8000/docs
+# ─────────────────────────────────────────────────────────────
+
+services:
+
+  # ── FastAPI Backend ───────────────────────────────────────
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: runtime           # use the lean runtime stage
+    container_name: resumeai-backend
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    environment:
+      # Override these in .env or via shell export
+      - DATABASE_URL=${DATABASE_URL:-sqlite:///./resume_analyzer.db}
+      - SECRET_KEY=${SECRET_KEY}
+      - ENCRYPTION_KEY=${ENCRYPTION_KEY}
+      - GROQ_API_KEY=${GROQ_API_KEY}
+      - LLM_BASE_URL=${LLM_BASE_URL:-https://api.groq.com/openai/v1}
+      - MODEL_VERSION=${MODEL_VERSION:-llama-3.3-70b-versatile}
+      - ALLOWED_ORIGINS=${ALLOWED_ORIGINS:-http://localhost:5173}
+      - ENV=${ENV:-development}
+      - MAX_FILE_SIZE_MB=${MAX_FILE_SIZE_MB:-5}
+      - DAILY_FREE_LIMIT=${DAILY_FREE_LIMIT:-50}
+      - GUEST_LIFETIME_LIMIT=${GUEST_LIFETIME_LIMIT:-5}
+      - PORT=8000
+    volumes:
+      # Hot-reload: mount source so you can edit without rebuilding
+      - ./backend:/app/backend:ro
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    # Wait for db if using local postgres profile
+    depends_on:
+      db:
+        condition: service_healthy
+        required: false
+
+  # ── React Frontend (Vite dev server) ─────────────────────
+  frontend:
+    image: node:20-alpine
+    container_name: resumeai-frontend
+    working_dir: /app
+    command: sh -c "npm install && npm run dev -- --host 0.0.0.0"
+    ports:
+      - "5173:5173"
+    environment:
+      - VITE_API_URL=http://localhost:8000
+    volumes:
+      - ./frontend:/app
+      # Isolate node_modules inside the container (prevents Windows path issues)
+      - /app/node_modules
+    depends_on:
+      - backend
+
+  # ── Local Postgres (optional — use --profile db) ─────────
+  # Only needed if you want to test Postgres locally instead of Neon.
+  # In production, always use Neon.
+  db:
+    image: postgres:16-alpine
+    container_name: resumeai-db
+    profiles: ["db"]           # opt-in: docker compose --profile db up
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: resumeai
+      POSTGRES_PASSWORD: localdev
+      POSTGRES_DB: resumeai
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U resumeai"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  postgres_data:

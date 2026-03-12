@@ -594,7 +594,7 @@ export default function LandingPage() {
       </footer>
 
       <div className="foot-bottom">
-        <div className="foot-copy">© 2026 ResumeAI — All rights reserved</div>
+        <div className="foot-copy">© {new Date().getFullYear()} ResumeAI · Built for African tech professionals</div>
         <div className="foot-status">
           <div className="pdot" />
           All systems operational

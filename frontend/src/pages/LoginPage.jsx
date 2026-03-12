@@ -18,7 +18,6 @@ export default function LoginPage() {
       await login(email, password)
       navigate('/app')
     } catch {
-      // Never show the server's actual error — always generic message
       setError('Invalid email or password')
     } finally {
       setLoading(false)
@@ -27,8 +26,8 @@ export default function LoginPage() {
 
   return (
     <div className="page">
-      <Nav />
-      <div className="container" style={{ paddingTop: 80, maxWidth: 420 }}>
+      <Nav links={[]} />
+      <div className="container" style={{ paddingTop: 100, maxWidth: 420 }}>
 
         <h1 style={{ fontSize: 32, marginBottom: 8 }}>Welcome back</h1>
         <p style={{ color: 'var(--text-dim)', fontSize: 13, marginBottom: 36 }}>
@@ -61,7 +60,14 @@ export default function LoginPage() {
               autoComplete="current-password"
             />
           </div>
-
+          <div style={{ textAlign: 'right', marginTop: -8, marginBottom: 16 }}>
+            <Link
+              to="/forgot-password"
+              style={{ fontSize: 11, color: 'var(--text-dim)', textDecoration: 'none', letterSpacing: '0.05em' }}
+            >
+              Forgot password?
+            </Link>
+          </div>
           {error && (
             <div className="banner banner-error"><span>⚠</span><span>{error}</span></div>
           )}

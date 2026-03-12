@@ -23,3 +23,11 @@ export async function getHistory() {
   const res = await client.get('/history')
   return res.data
 }
+
+export async function compareAnalyses(baselineId, revisedId) {
+  const { data } = await api.post('/analyze/compare', {
+    baseline_id: baselineId,
+    revised_id:  revisedId,
+  })
+  return data
+}

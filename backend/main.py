@@ -31,6 +31,12 @@ from backend.middleware.guest_cookie import GuestCookieMiddleware
 
 # Import all models so metadata is populated before create_all
 import backend.models  # noqa: F401
+from backend.routers.compare import router as compare_router
+
+
+
+
+
 
 logger = logging.getLogger("resume_analyzer")
 
@@ -83,6 +89,8 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
+
+app.include_router(compare_router, prefix="/api/v1")
 # ── State for slowapi ────────────────────────────────────────────────────────
 app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, rate_limit_exceeded_handler)

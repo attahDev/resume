@@ -1,8 +1,8 @@
 import uuid
-from datetime import datetime, date
+from datetime import datetime, date, timezone
 from sqlalchemy import String, Boolean, Integer, DateTime, Date, text
 from sqlalchemy.types import Uuid
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 from backend.database import Base
 
 class User(Base):
@@ -17,4 +17,5 @@ class User(Base):
     daily_analyses_count: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
     daily_reset_date: Mapped[date | None] = mapped_column(Date, nullable=True)
     last_login: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
-    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=datetime.utcnow, nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), nullable=False)
+    reset_tokens = relationship("PasswordResetToken", back_populates="user", cascade="all, delete-orphan")

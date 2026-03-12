@@ -1,10 +1,10 @@
 import { useState } from 'react'
-import Nav           from '../components/Nav.jsx'
-import UploadZone    from '../components/UploadZone.jsx'
-import JobInput      from '../components/JobInput.jsx'
-import StatusPoller  from '../components/StatusPoller.jsx'
+import Nav            from '../components/Nav.jsx'
+import UploadZone     from '../components/UploadZone.jsx'
+import JobInput       from '../components/JobInput.jsx'
+import StatusPoller   from '../components/StatusPoller.jsx'
 import ScoreDashboard from '../components/ScoreDashboard.jsx'
-import { useAuth }   from '../auth/useAuth.jsx'
+import { useAuth }    from '../auth/useAuth.jsx'
 
 const STEPS = ['Upload', 'Describe Job', 'Analyzing', 'Results']
 
@@ -44,10 +44,12 @@ export default function AppPage() {
 
   return (
     <div className="page">
-      <Nav />
-      <div className="container" style={{ paddingTop: 48, paddingBottom: 80 }}>
+      {/* Inner page — hide landing anchors, keep ANALYZE/HISTORY/auth */}
+      <Nav links={[]} />
 
-        {/* ── Step indicator ── */}
+      <div className="container" style={{ paddingTop: 80, paddingBottom: 80 }}>
+
+        {/* Step indicator */}
         <div style={{ display: 'flex', alignItems: 'center', marginBottom: 44, overflowX: 'auto' }}>
           {STEPS.map((s, i) => {
             const n      = i + 1
@@ -57,7 +59,8 @@ export default function AppPage() {
               <div key={s} style={{ display: 'flex', alignItems: 'center' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                   <span style={{
-                    width: 24, height: 24, border: `1px solid ${done || active ? 'var(--green)' : 'var(--border)'}`,
+                    width: 24, height: 24,
+                    border: `1px solid ${done || active ? 'var(--green)' : 'var(--border)'}`,
                     background: done ? 'var(--green)' : 'transparent',
                     color: done ? '#000' : active ? 'var(--green)' : 'var(--text-ghost)',
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
@@ -87,14 +90,14 @@ export default function AppPage() {
           )}
         </div>
 
-        {/* ── Step content ── */}
+        {/* Step content */}
         <div key={step} className="animate-fade-in">
 
           {step === 1 && (
             <>
               <h2 style={{ fontSize: 26, marginBottom: 6 }}>Upload Your Resume</h2>
               <p style={{ color: 'var(--text-dim)', fontSize: 13, marginBottom: 24 }}>
-                PDF or DOCX · Parsed locally · PII never stored in plain text
+                PDF or DOCX · Analyzed locally · PII never stored in plain text
               </p>
               <UploadZone onSuccess={handleUploadSuccess} />
             </>

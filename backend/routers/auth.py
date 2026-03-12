@@ -11,7 +11,7 @@ import asyncio
 import hashlib
 from datetime import datetime, timezone
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, Request
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 
@@ -44,7 +44,7 @@ def _hash_token(token: str) -> str:
 @router.post("/register", response_model=UserResponse, status_code=status.HTTP_201_CREATED)
 @limiter.limit("5/minute")
 async def register(
-    request,
+    request: Request,
     body: RegisterRequest,
     db: AsyncSession = Depends(get_db),
 ):
@@ -72,7 +72,7 @@ async def register(
 @router.post("/login", response_model=TokenResponse)
 @limiter.limit("10/minute")
 async def login(
-    request,
+    request: Request,
     body: LoginRequest,
     db: AsyncSession = Depends(get_db),
 ):
