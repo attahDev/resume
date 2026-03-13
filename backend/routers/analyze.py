@@ -1,9 +1,4 @@
-"""
-Analyze router — full implementation.
-Enforces guest lifetime limit and auth daily limit.
-Queues analysis as background task, returns immediately with analysis_id.
-IDOR protection: every query scoped to owner.
-"""
+
 import uuid
 import logging
 from datetime import datetime, timezone, date
@@ -77,7 +72,7 @@ async def analyze(
                 status_code=429,
                 detail={
                     "error": f"You have used all {settings.GUEST_LIFETIME_LIMIT} free guest analyses.",
-                    "message": "Create a free account for 50 analyses per day.",
+                    "message": "Create a free account for {settings.DAILY_FREE_LIMIT} analyses per day.",
                     "action": "register",
                 },
             )

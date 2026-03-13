@@ -15,8 +15,8 @@ class Settings(BaseSettings):
     ALLOWED_ORIGINS: str = "http://localhost:5173"
     ENV: str = "development"
     MAX_FILE_SIZE_MB: int = 5
-    DAILY_FREE_LIMIT: int = 50
-    GUEST_LIFETIME_LIMIT: int = 5
+    DAILY_FREE_LIMIT: int = 10
+    GUEST_LIFETIME_LIMIT: int = 3
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
     REFRESH_TOKEN_EXPIRE_DAYS: int = 7
 

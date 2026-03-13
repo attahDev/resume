@@ -85,7 +85,7 @@ export default function AppPage() {
 
           {dailyLeft !== null && (
             <span style={{ marginLeft: 'auto', paddingLeft: 16, fontSize: 11, color: 'var(--text-dim)', whiteSpace: 'nowrap' }}>
-              {dailyLeft}/50 left today
+              {dailyLeft}/10 left today
             </span>
           )}
         </div>
