@@ -1,17 +1,4 @@
-"""
-Resume Analyzer & Job Match Scorer — FastAPI application entry point.
 
-Middleware order (outermost → innermost):
-  1. SecurityHeadersMiddleware  — security headers on every response
-  2. PIILoggingMiddleware       — structured logging, PII scrubbed
-  3. GuestCookieMiddleware      — injected in Phase 3
-  4. CORSMiddleware             — CORS, locked to ALLOWED_ORIGINS
-
-Startup:
-  - Create DB tables
-  - Clear expired resume text
-  - Recover dead jobs (stuck in 'processing' > 5 min)
-"""
 import logging
 from contextlib import asynccontextmanager
 from datetime import datetime, timedelta, timezone
@@ -28,11 +15,11 @@ from backend.security.rate_limit import limiter, rate_limit_exceeded_handler
 from backend.middleware.logging import PIILoggingMiddleware
 from backend.middleware.cleanup import delete_expired_resume_text
 from backend.middleware.guest_cookie import GuestCookieMiddleware
-
-# Import all models so metadata is populated before create_all
+from backend.routers import auth, upload, analyze, results, history
+from backend.database import Base
 import backend.models  # noqa: F401
 from backend.routers.compare import router as compare_router
-
+from backend.models.analysis import Analysis
 
 
 
@@ -42,9 +29,6 @@ logger = logging.getLogger("resume_analyzer")
 
 
 async def _recover_dead_jobs(db) -> None:
-    """Reset analyses stuck in 'processing' for more than 5 minutes back to 'pending'."""
-    from backend.models.analysis import Analysis
-
     cutoff = datetime.now(timezone.utc) - timedelta(minutes=5)
     result = await db.execute(
         select(Analysis.id).where(
@@ -68,7 +52,6 @@ async def _recover_dead_jobs(db) -> None:
 async def lifespan(app: FastAPI):
     # ── Startup ──────────────────────────────────────────────────────────
     async with engine.begin() as conn:
-        from backend.database import Base
         await conn.run_sync(Base.metadata.create_all)
 
     async with AsyncSessionLocal() as db:
@@ -115,16 +98,16 @@ app.add_middleware(
 
 # ── Routers ──────────────────────────────────────────────────────────────────
 # Stubs included; fully implemented in later phases
-from backend.routers import auth, upload, analyze, results  # noqa: E402
+
 
 app.include_router(auth.router, prefix="/auth", tags=["auth"])
 app.include_router(upload.router, prefix="/upload", tags=["upload"])
 app.include_router(analyze.router, prefix="", tags=["analyze"])
 app.include_router(results.router, prefix="", tags=["results"])
+app.include_router(history.router, prefix="", tags=["history"])
 
 
 # ── Health check ─────────────────────────────────────────────────────────────
 @app.get("/health", tags=["health"])
 async def health():
-    """Returns service status. Safe to expose publicly."""
     return {"status": "ok", "env": settings.ENV}

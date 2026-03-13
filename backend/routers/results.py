@@ -135,7 +135,7 @@ async def get_history(
                 "analysis_id": str(a.id),
                 "status":       a.status,
                 "overall_score": a.overall_score,
-                "job_title":    j.job_title,
+                "job_title":    j.title,
                 "company":      j.company,
                 "created_at":   a.created_at.isoformat() if a.created_at else None,
             }

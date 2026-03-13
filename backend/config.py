@@ -1,7 +1,3 @@
-"""
-Application configuration — reads from .env via pydantic-settings.
-Validates SECRET_KEY and ENCRYPTION_KEY on startup. Never logs values.
-"""
 from pydantic_settings import BaseSettings
 from pydantic import field_validator
 from cryptography.fernet import Fernet

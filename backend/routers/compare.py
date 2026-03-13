@@ -1,15 +1,4 @@
-"""
-Phase 9A — Delta Scoring
-POST /analyze/compare
 
-Compares two analysis results for the same resume against the same job,
-returning per-dimension deltas and an improvement summary.
-
-Usage:
-    POST /analyze/compare
-    Body: { "baseline_id": "uuid", "revised_id": "uuid" }
-    Auth: Required (user must own both analyses)
-"""
 
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession

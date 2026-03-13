@@ -1,15 +1,10 @@
-"""Service stub: nlp — implemented in a later phase."""
-"""
-NLP service — skill extraction and semantic similarity.
-Uses spaCy and sentence-transformers, both running fully locally.
-No data leaves the server. Models are lazy-loaded and cached as singletons.
-"""
 import re
 import logging
 from typing import Optional
 from sklearn.metrics.pairwise import cosine_similarity
 import numpy as np
-
+from sentence_transformers import SentenceTransformer
+import spacy
 
 logger = logging.getLogger("resume_analyzer")
 
@@ -21,7 +16,7 @@ _embedder = None
 def get_nlp():
     global _nlp
     if _nlp is None:
-        import spacy
+        
         logger.info("nlp", extra={"action": "loading_spacy"})
         _nlp = spacy.load("en_core_web_sm")
     return _nlp
@@ -30,7 +25,7 @@ def get_nlp():
 def get_embedder():
     global _embedder
     if _embedder is None:
-        from sentence_transformers import SentenceTransformer
+        
         logger.info("nlp", extra={"action": "loading_embedder"})
         _embedder = SentenceTransformer("all-MiniLM-L6-v2")
     return _embedder
@@ -96,13 +91,6 @@ _SKILLS_LOWER = {s.lower(): s for s in SKILLS_LIST}
 
 # ── Skill extraction ──────────────────────────────────────────────────────────
 def extract_skills(text: str) -> list[str]:
-    """
-    Extract tech skills from text using two approaches:
-    1. spaCy NER — catches PRODUCT and ORG entities
-    2. Regex scan of SKILLS_LIST — catches exact matches
-
-    Returns sorted, deduplicated, lowercase list.
-    """
     nlp = get_nlp()
     found: set[str] = set()
 
@@ -125,29 +113,40 @@ def extract_skills(text: str) -> list[str]:
 
 # ── Experience extraction ─────────────────────────────────────────────────────
 def extract_experience_level(text: str) -> dict:
-    """
-    Extract years of experience and seniority level from text.
-    Returns {years: int|None, level: str|None}
-    """
-    # Find all "X year" / "X+ year" patterns and take the max
-    year_patterns = re.findall(r"(\d+)\+?\s*years?", text.lower())
-    years = max((int(y) for y in year_patterns), default=None)
+
+    text_lower = text.lower()
+
+    # FIX 1 — expanded year patterns to catch Nigerian CV formats
+    # Covers: "3 years", "3+ years", "3yrs", "3 yrs", "5 years post-NYSC"
+    numeric_patterns = re.findall(r"(\d+)\+?\s*(?:years?|yrs?)", text_lower)
+
+    # Written-out numbers — "two years", "three years" etc.
+    written_numbers = {
+        "one": 1, "two": 2, "three": 3, "four": 4, "five": 5,
+        "six": 6, "seven": 7, "eight": 8, "nine": 9, "ten": 10,
+    }
+    written_patterns = []
+    for word, value in written_numbers.items():
+        if re.search(r"\b" + word + r"\s+years?\b", text_lower):
+            written_patterns.append(value)
+
+    all_years = [int(y) for y in numeric_patterns] + written_patterns
+    years = max(all_years, default=None)
 
     # Seniority keyword scan — order matters (most senior first)
     level = None
     level_keywords = [
         ("principal", "Principal"),
-        ("staff", "Staff"),
-        ("director", "Director"),
-        ("lead", "Lead"),
-        ("senior", "Senior"),
+        ("staff",     "Staff"),
+        ("director",  "Director"),
+        ("lead",      "Lead"),
+        ("senior",    "Senior"),
         ("mid-level", "Mid-level"),
         ("mid level", "Mid-level"),
-        ("junior", "Junior"),
-        ("entry", "Junior"),
-        ("intern", "Intern"),
+        ("junior",    "Junior"),
+        ("entry",     "Junior"),
+        ("intern",    "Intern"),
     ]
-    text_lower = text.lower()
     for keyword, label in level_keywords:
         if keyword in text_lower:
             level = label
@@ -158,13 +157,11 @@ def extract_experience_level(text: str) -> dict:
 
 # ── Semantic similarity ───────────────────────────────────────────────────────
 def compute_semantic_similarity(text1: str, text2: str) -> float:
-    """
-    Compute cosine similarity between two texts using sentence-transformers.
-    Returns float between 0.0 and 1.0.
-    """
-
-
-    embedder = get_embedder()
-    embeddings = embedder.encode([text1, text2])
-    score = cosine_similarity([embeddings[0]], [embeddings[1]])[0][0]
-    return float(score)
+    try:
+        embedder = get_embedder()
+        embeddings = embedder.encode([text1, text2])
+        score = cosine_similarity([embeddings[0]], [embeddings[1]])[0][0]
+        return float(score)
+    except Exception as e:
+        logger.warning("nlp_similarity_failed", extra={"error": str(e)})
+        return 0.0

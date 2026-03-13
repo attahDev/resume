@@ -1,7 +1,3 @@
-"""
-Async database engine and session factory.
-Supports Neon PostgreSQL (asyncpg) and SQLite (aiosqlite) for local dev.
-"""
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sessionmaker
 from sqlalchemy.orm import DeclarativeBase
 from typing import AsyncGenerator
@@ -10,7 +6,6 @@ from backend.config import settings
 
 
 def _build_url(raw_url: str) -> str:
-    """Ensure correct async driver prefix."""
     if raw_url.startswith("postgresql://"):
         return raw_url.replace("postgresql://", "postgresql+asyncpg://", 1)
     if raw_url.startswith("postgresql+asyncpg://"):
@@ -50,7 +45,6 @@ class Base(DeclarativeBase):
 
 
 async def get_db() -> AsyncGenerator[AsyncSession, None]:
-    """FastAPI dependency — yields an async DB session."""
     async with AsyncSessionLocal() as session:
         try:
             yield session

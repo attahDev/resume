@@ -1,4 +1,107 @@
+# ── Environment & Secrets ─────────────────────────────────
 .env
-.venv
+.env.local
+.env.production
+.env.staging
+*.env
+
+# ── Python ────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+*.egg
+*.egg-info/
+dist/
+build/
+eggs/
+parts/
+var/
+sdist/
+wheels/
+*.manifest
+*.spec
+pip-log.txt
+pip-delete-this-directory.txt
+.installed.cfg
+
+# ── Virtual environments ──────────────────────────────────
+venv/
+.venv/
+env/
+ENV/
+.env/
+
+# ── Testing ───────────────────────────────────────────────
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+nosetests.xml
+coverage.xml
+*.cover
+
+# ── Database ──────────────────────────────────────────────
+*.db
+*.sqlite
+*.sqlite3
+
+# ── Uploads (user files — never commit) ──────────────────
+uploads/
+tmp/
+temp/
+
+# ── Node / React ──────────────────────────────────────────
+node_modules/
+frontend/node_modules/
+dist/
+frontend/dist/
+.npm
+*.tsbuildinfo
+
+# ── Vite ──────────────────────────────────────────────────
+frontend/.vite/
+.vite/
+
+# ── IDE ───────────────────────────────────────────────────
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+
+# ── Docker ────────────────────────────────────────────────
+.docker/
+
+# ── Logs ──────────────────────────────────────────────────
+*.log
+logs/
+
+# ── ML Models (large files — download at runtime) ─────────
+*.pkl
+*.bin
+*.pt
+*.pth
+models/
+.cache/
+
+# ── Security audit output ─────────────────────────────────
+pip-audit-report.json
+bandit-report.json
+```
+
+---
+
+## The Critical Ones
+```
+.env                ← your secrets — never commit this
+*.db / *.sqlite     ← local database
+uploads/            ← user resume files
+node_modules/       ← 200MB+ of packages
+__pycache__/        ← Python bytecode
+models/             ← sentence-transformers downloads here
+                       at runtime, can be 100MB+
+
 resume_analyzer.db
-docker-compose.yml
