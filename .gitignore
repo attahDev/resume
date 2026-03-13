@@ -1,3 +1,4 @@
 .env
 .venv
 resume_analyzer.db
+docker-compose.yml

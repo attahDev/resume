@@ -16,6 +16,7 @@ from backend.models.analysis import Analysis
 from backend.security.auth import get_optional_user
 from backend.middleware.guest_cookie import get_guest_fingerprint_hash
 from backend.security.rate_limit import limiter
+from backend.models.job import JobDescription
 
 logger = logging.getLogger("resume_analyzer")
 router = APIRouter()
@@ -110,29 +111,34 @@ async def get_history(
     """
     if current_user:
         result = await db.execute(
-            select(Analysis)
+            select(Analysis, JobDescription)
+            .join(JobDescription, Analysis.job_id == JobDescription.id)
             .where(Analysis.user_id == current_user.id)
             .order_by(Analysis.created_at.desc())
             .limit(50)
-        )
+)
     else:
         result = await db.execute(
-            select(Analysis)
+            select(Analysis, JobDescription)
+            .join(JobDescription, Analysis.job_id == JobDescription.id)
             .where(Analysis.guest_fingerprint == fingerprint_hash)
             .order_by(Analysis.created_at.desc())
             .limit(10)
-        )
+)
 
-    analyses = result.scalars().all()
+
+    rows = result.all()
 
     return {
         "analyses": [
             {
                 "analysis_id": str(a.id),
-                "status": a.status,
+                "status":       a.status,
                 "overall_score": a.overall_score,
-                "created_at": a.created_at.isoformat() if a.created_at else None,
+                "job_title":    j.job_title,
+                "company":      j.company,
+                "created_at":   a.created_at.isoformat() if a.created_at else None,
             }
-            for a in analyses
+            for a, j in rows
         ]
     }

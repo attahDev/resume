@@ -30,7 +30,13 @@ export function AuthProvider({ children }) {
   }
 
   async function register(email, password) {
-    return await apiRegister(email, password)
+    await apiRegister(email, password)
+    // Auto-login after successful registration
+    await apiLogin(email, password)
+    const u = await getMe()
+    setUser(u)
+    setIsAuthenticated(true)
+    return u
   }
 
   async function logout() {

@@ -86,7 +86,8 @@ services:
     ports:
       - "5432:5432"
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - ./backend:/app/backend:ro
+      - ./resume_analyzer.db:/app/resume_analyzer.db
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U resumeai"]
       interval: 10s

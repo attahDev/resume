@@ -21,11 +21,12 @@ export async function getResult(analysisId) {
 
 export async function getHistory() {
   const res = await client.get('/history')
-  return res.data
+  const d = res.data
+  return Array.isArray(d) ? d : d.analyses ?? []
 }
 
 export async function compareAnalyses(baselineId, revisedId) {
-  const { data } = await api.post('/analyze/compare', {
+  const { data } = await client.post('/analyze/compare', {
     baseline_id: baselineId,
     revised_id:  revisedId,
   })

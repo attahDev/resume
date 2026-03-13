@@ -18,7 +18,7 @@ export default function HistoryPage() {
 
   useEffect(() => {
     getHistory()
-      .then(d => setItems(d))
+      .then(d => setItems(Array.isArray(d) ? d : d.items ?? d.analyses ?? []))
       .catch(() => setError('Failed to load history'))
       .finally(() => setLoading(false))
   }, [])

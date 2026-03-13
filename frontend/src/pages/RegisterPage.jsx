@@ -27,7 +27,7 @@ function StrengthBar({ password }) {
       </div>
       <div style={{ display: 'flex', gap: 12 }}>
         {['8+ chars', 'Uppercase', 'Number', 'Special char'].map((c, i) => (
-          <span key={c} style={{ fontSize: 10, color: checks[i] ? 'var(--green)' : 'var(--text-ghost)' }}>
+          <span key={c} style={{ fontSize: 10, color: checks[i] ? 'var(--green)' : 'var(--text-dim)' }}>
             {checks[i] ? '✓' : '○'} {c}
           </span>
         ))}
@@ -39,26 +39,40 @@ function StrengthBar({ password }) {
 export default function RegisterPage() {
   const { register } = useAuth()
   const navigate     = useNavigate()
-  const [email,      setEmail]     = useState('')
-  const [password,   setPassword]  = useState('')
-  const [confirm,    setConfirm]   = useState('')
-  const [loading,    setLoading]   = useState(false)
-  const [error,      setError]     = useState(null)
-  const [apiErrors,  setApiErrors] = useState([])
+
+  const [email,     setEmail]     = useState('')
+  const [password,  setPassword]  = useState('')
+  const [confirm,   setConfirm]   = useState('')
+  const [loading,   setLoading]   = useState(false)
+  const [error,     setError]     = useState(null)
+  const [apiErrors, setApiErrors] = useState([])
+  const [submitted, setSubmitted] = useState(false)
+
+  const passwordChecks = [
+    { label: '8+ characters',        pass: password.length >= 8 },
+    { label: 'One uppercase letter',  pass: /[A-Z]/.test(password) },
+    { label: 'One number',            pass: /[0-9]/.test(password) },
+    { label: 'One special character', pass: /[^A-Za-z0-9]/.test(password) },
+  ]
+  const passwordStrong = passwordChecks.every(c => c.pass)
 
   async function handleSubmit() {
+    setSubmitted(true)
     setError(null)
     setApiErrors([])
+
+    if (!passwordStrong) return
     if (password !== confirm) { setError('Passwords do not match'); return }
+
     setLoading(true)
     try {
       await register(email, password)
-      navigate('/login', { state: { registered: true } })
+      navigate('/app')
     } catch (err) {
       const status = err.response?.status
       const data   = err.response?.data
       if (status === 409) setError('An account with this email already exists')
-      else if (status === 400 && data?.errors) setApiErrors(data.errors)
+      else if (status === 400 && data?.detail?.errors) setApiErrors(data.detail.errors)
       else setError('Registration failed — please try again')
     } finally {
       setLoading(false)
@@ -76,15 +90,42 @@ export default function RegisterPage() {
         </p>
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+
           <div>
             <label className="label">Email</label>
-            <input className="input" type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="you@example.com" autoComplete="email" />
+            <input
+              className="input"
+              type="email"
+              value={email}
+              onChange={e => setEmail(e.target.value)}
+              placeholder="you@example.com"
+              autoComplete="email"
+              autoFocus
+            />
           </div>
+
           <div>
             <label className="label">Password</label>
-            <input className="input" type="password" value={password} onChange={e => setPassword(e.target.value)} placeholder="••••••••" autoComplete="new-password" />
+            <input
+              className="input"
+              type="password"
+              value={password}
+              onChange={e => { setPassword(e.target.value); setSubmitted(false) }}
+              placeholder="••••••••"
+              autoComplete="new-password"
+            />
             <StrengthBar password={password} />
+            {submitted && !passwordStrong && (
+              <div style={{ marginTop: 8, display: 'flex', flexDirection: 'column', gap: 4 }}>
+                {passwordChecks.filter(c => !c.pass).map(c => (
+                  <span key={c.label} style={{ fontSize: 11, color: 'var(--red)' }}>
+                    ✗ {c.label}
+                  </span>
+                ))}
+              </div>
+            )}
           </div>
+
           <div>
             <label className="label">Confirm Password</label>
             <input
@@ -96,9 +137,16 @@ export default function RegisterPage() {
               placeholder="••••••••"
               autoComplete="new-password"
             />
+            {submitted && confirm && password !== confirm && (
+              <span style={{ fontSize: 11, color: 'var(--red)', marginTop: 4, display: 'block' }}>
+                ✗ Passwords do not match
+              </span>
+            )}
           </div>
 
-          {error && <div className="banner banner-error"><span>⚠</span><span>{error}</span></div>}
+          {error && (
+            <div className="banner banner-error"><span>⚠</span><span>{error}</span></div>
+          )}
           {apiErrors.length > 0 && (
             <div className="banner banner-error" style={{ flexDirection: 'column', gap: 4 }}>
               {apiErrors.map((e, i) => <span key={i}>⚠ {e}</span>)}
@@ -118,6 +166,7 @@ export default function RegisterPage() {
           >
             {loading ? <><span className="spinner" /> Creating account...</> : 'Create Account →'}
           </button>
+
         </div>
       </div>
     </div>
