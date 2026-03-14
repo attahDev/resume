@@ -73,7 +73,7 @@ app = FastAPI(
 )
 
 
-app.include_router(compare_router, prefix="/api/v1")
+app.include_router(compare_router)
 # ── State for slowapi ────────────────────────────────────────────────────────
 app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, rate_limit_exceeded_handler)

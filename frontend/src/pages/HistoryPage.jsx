@@ -15,6 +15,7 @@ export default function HistoryPage() {
   const [items,   setItems]   = useState([])
   const [loading, setLoading] = useState(true)
   const [error,   setError]   = useState(null)
+  const [mode,    setMode]    = useState('list')   // 'list' | 'compare'
 
   useEffect(() => {
     getHistory()
@@ -23,60 +24,105 @@ export default function HistoryPage() {
       .finally(() => setLoading(false))
   }, [])
 
+  const complete = items.filter(a => a.status === 'complete')
+  const canCompare = complete.length >= 2
+
   return (
     <div className="page">
       <Nav links={[]} />
       <div className="container" style={{ paddingTop: 80, paddingBottom: 80 }}>
 
-        <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: 32 }}>
-          <h1 style={{ fontSize: 28 }}>Analysis History</h1>
-          <Link to="/app" className="btn btn-primary" style={{ padding: '8px 18px' }}>+ New Analysis</Link>
-        </div>
+        {mode === 'compare' ? (
+          <DeltaView
+            analyses={items}
+            onClose={() => setMode('list')}
+          />
+        ) : (
+          <>
+            {/* Header */}
+            <div style={{
+              display: 'flex', alignItems: 'baseline',
+              justifyContent: 'space-between', marginBottom: 32, flexWrap: 'wrap', gap: 12,
+            }}>
+              <h1 style={{ fontSize: 28 }}>Analysis History</h1>
+              <div style={{ display: 'flex', gap: 10 }}>
+                {canCompare && (
+                  <button
+                    className="btn"
+                    style={{ padding: '8px 18px' }}
+                    onClick={() => setMode('compare')}
+                  >
+                    ⇄ Compare Versions
+                  </button>
+                )}
+                <Link to="/app" className="btn btn-primary" style={{ padding: '8px 18px' }}>
+                  + New Analysis
+                </Link>
+              </div>
+            </div>
 
-        {loading && <p style={{ color: 'var(--text-dim)', fontSize: 13 }}>Loading...</p>}
-        {error   && <div className="banner banner-error"><span>⚠</span><span>{error}</span></div>}
-        {!loading && !error && items.length === 0 && (
-          <div style={{ textAlign: 'center', padding: '60px 0' }}>
-            <p style={{ color: 'var(--text-dim)', marginBottom: 16 }}>No analyses yet.</p>
-            <Link to="/app" className="btn btn-primary">Run your first analysis →</Link>
-          </div>
+            {/* States */}
+            {loading && <p style={{ color: 'var(--text-dim)', fontSize: 13 }}>Loading...</p>}
+            {error   && <div className="banner banner-error"><span>⚠</span><span>{error}</span></div>}
+            {!loading && !error && items.length === 0 && (
+              <div style={{ textAlign: 'center', padding: '60px 0' }}>
+                <p style={{ color: 'var(--text-dim)', marginBottom: 16 }}>No analyses yet.</p>
+                <Link to="/app" className="btn btn-primary">Run your first analysis →</Link>
+              </div>
+            )}
+
+            {/* List */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+              {items.map((item, i) => (
+                <div
+                  key={item.analysis_id}
+                  className="card"
+                  style={{
+                    display: 'grid',
+                    gridTemplateColumns: '56px 1fr auto',
+                    gap: 16,
+                    alignItems: 'center',
+                    animation: `fadeIn 0.3s ease ${i * 0.05}s both`,
+                  }}
+                >
+                  <div style={{ textAlign: 'center' }}>
+                    <span style={{
+                      fontFamily: 'var(--font-serif)',
+                      fontSize: 22,
+                      fontWeight: 900,
+                      color: scoreColor(item.overall_score),
+                    }}>
+                      {item.overall_score ?? '—'}
+                    </span>
+                  </div>
+                  <div>
+                    <p style={{ fontWeight: 600, fontSize: 13, marginBottom: 2 }}>
+                      {item.job_title || 'Untitled Role'}
+                    </p>
+                    <p style={{ fontSize: 11, color: 'var(--text-dim)' }}>
+                      {item.company || 'Unknown'} · {new Date(item.created_at).toLocaleDateString()}
+                    </p>
+                  </div>
+                  <span className={`badge badge-${item.status === 'complete' ? 'green' : item.status === 'failed' ? 'red' : 'dim'}`}>
+                    {item.status}
+                  </span>
+                </div>
+              ))}
+            </div>
+
+            {/* Hint when only 1 analysis */}
+            {!loading && !error && items.length === 1 && (
+              <p style={{
+                fontSize: 11, color: 'var(--text-ghost)',
+                fontFamily: 'var(--font-mono)', marginTop: 20,
+                letterSpacing: '0.06em',
+              }}>
+                Run one more analysis to unlock version comparison →
+              </p>
+            )}
+          </>
         )}
 
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-          {items.map((item, i) => (
-            <div
-              key={item.analysis_id}
-              className="card"
-              style={{
-                display: 'grid',
-                gridTemplateColumns: '56px 1fr auto',
-                gap: 16,
-                alignItems: 'center',
-                animation: `fadeIn 0.3s ease ${i * 0.05}s both`,
-              }}
-            >
-              <div style={{ textAlign: 'center' }}>
-                <span style={{
-                  fontFamily: 'var(--font-serif)',
-                  fontSize: 22,
-                  fontWeight: 900,
-                  color: scoreColor(item.overall_score),
-                }}>
-                  {item.overall_score ?? '—'}
-                </span>
-              </div>
-              <div>
-                <p style={{ fontWeight: 600, fontSize: 13, marginBottom: 2 }}>{item.job_title || 'Untitled Role'}</p>
-                <p style={{ fontSize: 11, color: 'var(--text-dim)' }}>
-                  {item.company || 'Unknown'} · {new Date(item.created_at).toLocaleDateString()}
-                </p>
-              </div>
-              <span className={`badge badge-${item.status === 'complete' ? 'green' : item.status === 'failed' ? 'red' : 'dim'}`}>
-                {item.status}
-              </span>
-            </div>
-          ))}
-        </div>
       </div>
     </div>
   )
