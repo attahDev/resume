@@ -125,8 +125,6 @@ export default function LandingPage() {
   const cardRef    = useRef(null)
   const holoRef    = useRef(null)
   const sceneRef   = useRef(null)
-  const curRef     = useRef(null)
-  const curRRef    = useRef(null)
   const atsRef     = useRef(null)
 
   /* ── Particle canvas ─────────────────────────────────── */
@@ -344,9 +342,7 @@ export default function LandingPage() {
 
       <style>{CSS}</style>
 
-      {/* Custom cursor — desktop only */}
-      <div id="cur"  ref={curRef}  />
-      <div id="cur-r" ref={curRRef} />
+
 
       {/* Noise overlay */}
       <div className="noise" />
@@ -630,24 +626,7 @@ body {
   overflow-x: hidden;
 }
 
-/* ── CUSTOM CURSOR (desktop only) ── */
-#cur {
-  position: fixed; width: 6px; height: 6px;
-  background: var(--g); border-radius: 50%;
-  pointer-events: none; z-index: 9999;
-  transform: translate(-50%,-50%); mix-blend-mode: screen;
-}
-#cur-r {
-  position: fixed; width: 28px; height: 28px;
-  border: 1px solid rgba(0,255,135,0.45); border-radius: 50%;
-  pointer-events: none; z-index: 9998;
-  transform: translate(-50%,-50%);
-  transition: width .2s, height .2s, background .2s;
-}
-@media (max-width: 900px) {
-  #cur, #cur-r { display: none; }
-  body { cursor: auto; }
-}
+
 
 /* ── NOISE ── */
 .noise {
