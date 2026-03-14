@@ -2,7 +2,6 @@
 import asyncio
 import logging
 import time
-from typing import Any
 from dotenv import load_dotenv
 import os
 import json
@@ -19,9 +18,6 @@ _client = None
 def get_client():
     global _client
     if _client is None:
-        from openai import AsyncOpenAI
-        from dotenv import load_dotenv
-        import os
         load_dotenv(override=True)
         _client = AsyncOpenAI(
             api_key=os.getenv("GROQ_API_KEY"),
@@ -61,11 +57,10 @@ Respond ONLY with a valid JSON object. No preamble. No explanation. JSON only.
 # ── Fallback response ─────────────────────────────────────────────────────────
 FALLBACK_RESPONSE = {
     "overall_assessment": "Analysis unavailable — please retry.",
-    "top_strengths": [],
-    "critical_gaps": [],
     "quick_wins": [],
     "ats_warning": None,
     "score_explanation": "",
+    "sections": [],
 }
 
 
@@ -85,7 +80,6 @@ async def get_llm_analysis(scorer_result: dict, jd_text: str) -> dict:
     exp_s          = scorer_result.get("experience_score", 0)
     kw_s           = scorer_result.get("keywords_score", 0)
 
-    # Build privacy-safe prompt — skills and scores only, no PII
     user_prompt = f"""
 Job Description:
 {jd_text[:2000]}
@@ -101,73 +95,60 @@ Return ONLY this exact JSON structure — no other text, no markdown:
 {{
   "overall_assessment": "2-3 sentences. What this score means for this specific role and candidacy. Not generic — reference the actual role and matched skills.",
 
-  "top_strengths": [
-    "Specific strength relevant to THIS job based on matched skills — not generic praise",
-    "Second specific strength",
-    "Third specific strength"
-  ],
-
-  "critical_gaps": [
-    {{
-      "skill": "Exact skill name or group from the JD",
-      "importance": "high | medium | low",
-      "suggestion": "Follow this decision logic exactly:
-        STEP 1 — Check if this skill could be implied from their matched skills.
-        Examples of implied skills:
-          Python listed → Django, Flask, FastAPI likely known but unlisted
-          JavaScript listed → React, Node.js, Express likely known but unlisted
-          AWS listed → EC2, S3, Lambda likely known but unlisted
-          SQL listed → PostgreSQL, MySQL likely known but unlisted
-        If implied: say exactly this —
-          'You listed [matched skill] but not [missing skill]. ATS systems do not
-          infer [missing skill] from [matched skill]. Add [matched skill] ([missing skill])
-          to your Skills section — this directly matches the JD requirement.'
-        STEP 2 — If genuinely missing (not implied from anything matched):
-          Give the shortest realistic path. One personal project is enough.
-          Say: 'Build one small project using [skill] and list it as [skill] (personal project).
-          This is enough to pass ATS filtering and gives you something concrete to discuss
-          in interviews.'
-        NEVER say: take a course, learn X, familiarise yourself, consider studying.
-        Keep suggestion under 3 sentences."
-    }}
-  ],
-
   "quick_wins": [
-    "Quick wins are ONLY for skills the candidate already has in matched_skills.
-     Never suggest something they do not have.
-     Each item must be one of these three types:
-
-     TYPE 1 — Skill listed too vaguely (most common for Nigerian devs):
-     Use this when a broad skill like Python or JavaScript is matched but
-     specific frameworks are missing from the JD.
-     Format: 'Add to your Skills section: [Broad Skill] ([Framework1], [Framework2], [Framework3])
-     — you currently list [broad skill] alone which will not match framework-specific ATS filters.'
-
-     TYPE 2 — Experience bullet that should exist but is missing:
-     Write a realistic, specific bullet based on their matched skills and the JD requirements.
-     Format: 'Add this bullet to your most recent role:
-     [write the exact bullet — make it specific, quantified where possible, and directly
-     matching a JD requirement]. This addresses the JD requirement for [specific requirement].'
-
-     TYPE 3 — Weak or vague phrasing that needs upgrading:
-     Format: 'Strengthen your summary or experience section by replacing vague language with:
-     [exact replacement phrase that mirrors JD language] — this phrase signals direct relevance
-     to the hiring manager and matches ATS keywords for this role.'
-
-     Rules:
-     - Maximum 3 items
-     - Every item must be immediately actionable today — no studying, no courses
-     - Every item must include copy-paste ready text
-     - Do not repeat gaps already covered in critical_gaps",
-
-    "second quick win following same TYPE format",
-
-    "third quick win following same TYPE format"
+    "TYPE 1 — Skill listed too vaguely: 'Add to your Skills section: [Broad Skill] ([Framework1], [Framework2]) — you currently list [broad skill] alone which will not match framework-specific ATS filters.' | TYPE 2 — Experience bullet missing: 'Add this bullet to your most recent role: [write exact bullet — specific, quantified]. This addresses the JD requirement for [requirement].' | TYPE 3 — Weak phrasing: 'Strengthen your summary by replacing vague language with: [exact replacement phrase that mirrors JD language]'. Rules: max 3 items, copy-paste ready text only, no courses or studying, only suggest skills they already have.",
+    "second quick win",
+    "third quick win"
   ],
 
-  "ats_warning": "One sentence about the single most critical keyword gap that will cause ATS rejection before a human sees the resume. null if no major ATS risk.",
+  "ats_warning": "One sentence about the single most critical keyword gap causing ATS rejection. null if no major risk.",
 
-  "score_explanation": "One sentence explaining exactly why this specific number was given — reference the weakest scoring area."
+  "score_explanation": "One sentence explaining exactly why this specific score number was given.",
+
+  "sections": [
+    {{
+      "title": "First Impression",
+      "severity": "high | medium | low",
+      "analysis": "2-3 sentences specific to this candidate's CV and this JD. What a recruiter would think in the first 10 seconds. Not generic.",
+      "suggestions": ["Specific actionable suggestion", "Another specific suggestion"]
+    }},
+    {{
+      "title": "Work Experience",
+      "severity": "high | medium | low",
+      "analysis": "Assess quality of experience bullets — achievement-focused vs task-focused, quantified, relevant to this JD.",
+      "suggestions": ["Specific suggestion about experience bullets", "Another suggestion"]
+    }},
+    {{
+      "title": "Skills",
+      "severity": "high | medium | low",
+      "analysis": "Assess how well their skills section matches this JD. Check for implied skills listed broadly but should be specific.",
+      "suggestions": ["Specific suggestion about skills section", "Another suggestion"]
+    }},
+    {{
+      "title": "Summary Statement",
+      "severity": "high | medium | low",
+      "analysis": "Does their summary position them well for this specific role? If no summary exists, flag as critical.",
+      "suggestions": ["Specific suggestion about their summary", "Another suggestion"]
+    }},
+    {{
+      "title": "Contact Info",
+      "severity": "high | medium | low",
+      "analysis": "Is contact info present and appropriate for this role type? For remote roles, LinkedIn and GitHub matter. For Nigerian roles, phone format matters.",
+      "suggestions": ["Specific suggestion"]
+    }},
+    {{
+      "title": "Education",
+      "severity": "high | medium | low",
+      "analysis": "Is education well presented and relevant? For Nigerian candidates, NYSC status and institution prestige matter to local employers.",
+      "suggestions": ["Specific suggestion"]
+    }},
+    {{
+      "title": "Formatting",
+      "severity": "high | medium | low",
+      "analysis": "Based on extracted text, assess structure and ATS-readability. Clean section headers, consistent date formats, and scannable layout matter.",
+      "suggestions": ["Specific suggestion about formatting"]
+    }}
+  ]
 }}
 """.strip()
 
@@ -180,7 +161,6 @@ async def _call_with_retry(user_prompt: str) -> dict:
     Call Groq API with up to 3 retries and exponential backoff.
     Logs attempt number, model, token usage, duration — never prompt content.
     """
-
     last_error = None
     backoff_seconds = [1, 2, 4]
 
@@ -194,7 +174,7 @@ async def _call_with_retry(user_prompt: str) -> dict:
                     {"role": "system", "content": SYSTEM_PROMPT},
                     {"role": "user",   "content": user_prompt},
                 ],
-                max_tokens=1200,
+                max_tokens=2000,
                 temperature=0.3,
                 response_format={"type": "json_object"},
             )
@@ -234,11 +214,9 @@ def _parse_response(raw: str, attempt: int) -> dict:
     Parse JSON response from LLM.
     Falls back to FALLBACK_RESPONSE on parse failure.
     """
-
     if not raw:
         return FALLBACK_RESPONSE
 
-    # Strip markdown fences if present
     clean = raw.strip()
     if clean.startswith("```"):
         clean = clean.split("```")[1]
@@ -248,9 +226,8 @@ def _parse_response(raw: str, attempt: int) -> dict:
 
     try:
         parsed = json.loads(clean)
-        # Ensure all required keys exist
-        required = ["overall_assessment", "top_strengths", "critical_gaps",
-                    "quick_wins", "ats_warning", "score_explanation"]
+        required = ["overall_assessment", "quick_wins", "ats_warning",
+                    "score_explanation", "sections"]
         for key in required:
             if key not in parsed:
                 parsed[key] = FALLBACK_RESPONSE[key]
