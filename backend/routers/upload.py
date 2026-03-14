@@ -1,10 +1,5 @@
 
-"""
-Upload router — handles resume file uploads for both guests and auth users.
-Security order: validate → detect MIME → hash → cache check → parse → encrypt → save.
-File content never appears in logs.
-Rate limit: 20 per hour per IP.
-"""
+
 import logging
 from datetime import datetime, timezone, timedelta
 
@@ -37,12 +32,7 @@ async def upload_resume(
     current_user=Depends(get_optional_user),
     fingerprint_hash: str = Depends(get_guest_fingerprint_hash),
 ):
-    """
-    Upload and parse a resume file (PDF or DOCX).
-    Works for both authenticated users and guests.
-    Returns resume_id, file_name, char_count, and a short preview.
-    Preview is shown to user only — never stored or logged.
-    """
+
     # Step 1 — validate: size + MIME whitelist + filename sanitisation
     file_bytes = await validate_upload(file)
 

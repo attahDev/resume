@@ -1,8 +1,4 @@
-"""
-JWT token creation and verification.
-get_current_user dependency — returns active User or raises 401.
-Tokens never logged. Expired/invalid always → 401, never 500.
-"""
+
 import uuid
 from datetime import datetime, timedelta, timezone
 from typing import Any
@@ -53,10 +49,7 @@ async def get_current_user(
     credentials: HTTPAuthorizationCredentials | None = Depends(_bearer),
     db: AsyncSession = Depends(get_db),
 ):
-    """
-    FastAPI dependency — reads Bearer token, returns active User.
-    Raises 401 on any failure.
-    """
+
     from backend.models.user import User
 
     credentials_exception = HTTPException(
@@ -94,10 +87,7 @@ async def get_optional_user(
     credentials: HTTPAuthorizationCredentials | None = Depends(_bearer),
     db: AsyncSession = Depends(get_db),
 ):
-    """
-    Returns User if valid Bearer token present, None otherwise.
-    Used for endpoints that work for both guests and auth users.
-    """
+
     if not credentials:
         return None
     try:

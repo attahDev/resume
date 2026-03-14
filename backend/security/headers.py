@@ -1,8 +1,4 @@
-"""
-Security headers middleware.
-Adds XSS, clickjacking, MIME sniff, HSTS, CSP headers to every response.
-Removes Server header.
-"""
+
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.requests import Request
 from starlette.responses import Response

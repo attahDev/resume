@@ -1,14 +1,4 @@
-"""Service stub: scorer — implemented in a later phase."""
-"""
-Scoring service — computes match scores between resume and job description.
-All computation is local — no external API calls.
 
-Weights:
-  skills      40%
-  experience  25%
-  keywords    20%
-  education   15%
-"""
 import re
 import logging
 
@@ -24,15 +14,7 @@ logger = logging.getLogger("resume_analyzer")
 
 # ── Skills scoring ────────────────────────────────────────────────────────────
 def compute_skills_score(resume_skills: list[str], required_skills: list[str]) -> dict:
-    """
-    Score how well resume skills match required skills.
 
-    Matching strategy:
-    - Exact match (case-insensitive) → full 1.0 weight
-    - Semantic near-match (similarity > 0.75) → 0.7 weight
-    
-    Returns {score: int, matched: list, missing: list}
-    """
     if not required_skills:
         return {"score": 80, "matched": resume_skills, "missing": []}
 
@@ -74,10 +56,7 @@ def compute_skills_score(resume_skills: list[str], required_skills: list[str]) -
 
 # ── Experience scoring ────────────────────────────────────────────────────────
 def compute_experience_score(resume_exp: dict, jd_text: str) -> int:
-    """
-    Compare resume years of experience against JD requirement.
-    Returns int 0-100.
-    """
+
     # Extract required years from JD
     year_patterns = re.findall(r"(\d+)\+?\s*years?", jd_text.lower())
     required_years = max((int(y) for y in year_patterns), default=None)
@@ -101,11 +80,7 @@ def compute_experience_score(resume_exp: dict, jd_text: str) -> int:
 
 # ── Keywords scoring ──────────────────────────────────────────────────────────
 def compute_keywords_score(resume_text: str, jd_text: str) -> int:
-    """
-    Extract meaningful keywords from JD and check how many appear in resume.
-    Uses spaCy to filter stopwords and short tokens.
-    Returns int 0-100.
-    """
+
     nlp = get_nlp()
     doc = nlp(jd_text[:50_000])
 
@@ -130,10 +105,7 @@ def compute_keywords_score(resume_text: str, jd_text: str) -> int:
 
 # ── Education scoring ─────────────────────────────────────────────────────────
 def compute_education_score(resume_text: str, jd_text: str) -> int:
-    """
-    Simple keyword-based education match.
-    Checks if resume mentions required degree level.
-    """
+
     degree_hierarchy = ["phd", "doctorate", "masters", "msc", "mba", "bachelor", "bsc", "hnd", "ond", "diploma"]
 
     jd_lower = jd_text.lower()
@@ -160,13 +132,7 @@ def compute_education_score(resume_text: str, jd_text: str) -> int:
 
 # ── Full scoring pipeline ─────────────────────────────────────────────────────
 def run_full_score(resume_text: str, jd_text: str) -> dict:
-    """
-    Run the complete scoring pipeline.
 
-    Weights: skills 40% + experience 25% + keywords 20% + education 15%
-
-    Returns dict matching AnalysisResponse schema.
-    """
     # Extract from both texts
     resume_skills = extract_skills(resume_text)
     jd_skills = extract_skills(jd_text)

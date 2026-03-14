@@ -1,4 +1,4 @@
-"""Pydantic v2 schemas for authentication endpoints."""
+
 import uuid
 from datetime import datetime, date
 from pydantic import BaseModel, EmailStr, field_validator

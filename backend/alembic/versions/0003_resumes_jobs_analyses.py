@@ -1,9 +1,4 @@
-"""create resumes, job_descriptions, and analyses tables
 
-Revision ID: 0003_resumes_jobs_analyses
-Revises: 0002_guest_sessions
-Create Date: 2026-03-01
-"""
 from typing import Sequence, Union
 from alembic import op
 import sqlalchemy as sa

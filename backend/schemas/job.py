@@ -1,4 +1,4 @@
-"""Schema stub: job — implemented in a later phase."""
+
 from pydantic import BaseModel
 from typing import Optional
 from datetime import datetime

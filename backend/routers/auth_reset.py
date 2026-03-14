@@ -1,17 +1,3 @@
-"""
-backend/routers/auth_reset.py
-
-Password reset endpoints.
-Wire into main.py:
-    from backend.routers.auth_reset import router as reset_router
-    app.include_router(reset_router, prefix="/api/v1")
-
-Routes:
-    POST /auth/forgot-password   — request reset link
-    POST /auth/reset-password    — submit new password with token
-"""
-
-import os
 import hashlib
 import secrets
 import uuid
@@ -25,7 +11,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from ..database import get_db
 from ..models.user import User
 from ..models.password_reset import PasswordResetToken
-from ..security.passwords import hash_password, validate_password_strength
+from ..security.passwords import hash_password, check_password_strength
 from ..services.email import send_password_reset_email
 
 router = APIRouter(prefix="/auth", tags=["auth"])
@@ -61,12 +47,7 @@ async def forgot_password(
     body: ForgotPasswordRequest,
     db:   AsyncSession = Depends(get_db),
 ):
-    """
-    Request a password reset link.
 
-    Always returns 200 with the same message regardless of whether the
-    email exists — prevents user enumeration.
-    """
     SAFE_MESSAGE = "If that email is registered, you'll receive a reset link within a minute."
 
     # Look up user
@@ -113,10 +94,7 @@ async def reset_password(
     body: ResetPasswordRequest,
     db:   AsyncSession = Depends(get_db),
 ):
-    """
-    Consume a reset token and set a new password.
-    Token is single-use and expires after 15 minutes.
-    """
+
     INVALID = HTTPException(
         status_code=status.HTTP_400_BAD_REQUEST,
         detail="This reset link is invalid or has expired. Please request a new one.",
@@ -147,7 +125,7 @@ async def reset_password(
         raise INVALID
 
     # Validate password strength
-    errors = validate_password_strength(body.password)
+    errors = check_password_strength(body.password)
     if errors:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,

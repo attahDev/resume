@@ -1,6 +1,4 @@
-"""
-Input sanitisation — strips HTML tags, normalises whitespace, truncates.
-"""
+
 import re
 import bleach
 
@@ -8,10 +6,7 @@ MAX_TEXT_LENGTH = 50_000
 
 
 def sanitise_text(text: str) -> str:
-    """
-    Strip all HTML, normalise whitespace, truncate to 50k chars.
-    Safe to call on any user-supplied string.
-    """
+
     if not text:
         return ""
 

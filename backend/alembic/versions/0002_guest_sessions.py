@@ -1,9 +1,4 @@
-"""create guest_sessions table
 
-Revision ID: 0002_guest_sessions
-Revises: 0001_users
-Create Date: 2026-03-01
-"""
 from typing import Sequence, Union
 from alembic import op
 import sqlalchemy as sa

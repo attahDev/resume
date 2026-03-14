@@ -1,14 +1,4 @@
-"""
-backend/services/email.py
 
-Resend email service.
-pip install resend
-
-Add to .env:
-    RESEND_API_KEY=re_xxxxxxxxxxxx
-    EMAIL_FROM=noreply@resumeai.onrender.com   # or your domain once you have one
-    FRONTEND_URL=https://resumeai-frontend.onrender.com
-"""
 
 import os
 import logging
@@ -28,10 +18,7 @@ FRONTEND_URL = os.getenv("FRONTEND_URL", "https://resumeai-frontend.onrender.com
 
 
 def _reset_email_html(reset_url: str) -> str:
-    """
-    Dark-themed HTML email matching the NeuralCV design system.
-    Works in Gmail, Outlook, Apple Mail.
-    """
+
     return f"""
 <!DOCTYPE html>
 <html lang="en">

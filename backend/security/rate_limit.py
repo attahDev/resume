@@ -1,8 +1,4 @@
-"""
-slowapi rate limiter — keyed by IP address.
-Import limiter and attach to FastAPI app.
-Import rate_limit_exceeded_handler and register as exception handler.
-"""
+
 from slowapi import Limiter
 from slowapi.util import get_remote_address
 from slowapi.errors import RateLimitExceeded

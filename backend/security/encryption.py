@@ -1,7 +1,4 @@
-"""
-Fernet AES-256 encryption for resume PII.
-Failed decryption logs a warning (no PII) and raises ValueError.
-"""
+
 import logging
 from cryptography.fernet import Fernet, InvalidToken
 

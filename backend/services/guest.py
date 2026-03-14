@@ -42,11 +42,11 @@ async def get_or_create_guest_session(fingerprint_hash: str, db: AsyncSession):
 
 
 async def check_guest_limit(session) -> bool:
-    """Return True if the guest has hit their lifetime limit."""
+    
     return session.analyses_count >= settings.GUEST_LIFETIME_LIMIT
 
 
 async def increment_guest_count(session, db: AsyncSession) -> None:
-    """Increment guest analysis count and persist."""
+
     session.analyses_count += 1
     await db.commit()

@@ -1,8 +1,4 @@
-"""
-Cache service — generates and looks up analysis cache keys.
-Cache key includes owner_id so results are never shared across users.
-Defence in depth: owner filter applied even though key contains owner.
-"""
+
 import hashlib
 import logging
 
@@ -18,21 +14,13 @@ def generate_cache_key(
     owner_id: str,
     model_version: str,
 ) -> str:
-    """
-    SHA-256 hash of resume+job+owner+model.
-    owner_id = user_id for auth users, guest_fingerprint for guests.
-    Including owner ensures cache is never shared across users.
-    """
+
     raw = f"{owner_id}:{resume_id}:{job_id}:{model_version}"
     return hashlib.sha256(raw.encode()).hexdigest()
 
 
 async def get_cached(db: AsyncSession, cache_key: str, owner_id: str):
-    """
-    Look up a completed analysis by cache key.
-    Always filters by owner — defence in depth against cache key collisions.
-    Returns Analysis or None.
-    """
+
     from backend.models.analysis import Analysis
     import uuid
 

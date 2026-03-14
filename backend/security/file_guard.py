@@ -1,11 +1,4 @@
-"""
-File upload guard.
-1. Size check
-2. Read bytes
-3. True MIME detection via python-magic (not Content-Type header)
-4. Whitelist check
-5. Filename sanitisation
-"""
+
 import re
 from fastapi import UploadFile, HTTPException, status
 
@@ -20,10 +13,7 @@ _SAFE_FILENAME = re.compile(r"[^a-zA-Z0-9.\-_]")
 
 
 async def validate_upload(file: UploadFile) -> bytes:
-    """
-    Validate and return file bytes.
-    Raises HTTPException 413 (too large) or 400 (bad type / bad file).
-    """
+
     import magic  # python-magic — lazy import so stub files still load
 
     max_bytes = settings.MAX_FILE_SIZE_MB * 1024 * 1024

@@ -1,9 +1,3 @@
-"""
-Guest cookie middleware.
-Sets httpOnly 'gfp' cookie on every request if not already present.
-Attaches raw fingerprint to request.state for use in route handlers.
-Raw value never stored — only hash_fingerprint(raw) goes to DB.
-"""
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.requests import Request
 from starlette.responses import Response
@@ -40,10 +34,7 @@ class GuestCookieMiddleware(BaseHTTPMiddleware):
 
 
 def get_guest_fingerprint_hash(request: Request) -> str:
-    """
-    FastAPI dependency — returns SHA-256 hash of the raw guest fingerprint.
-    Use this in route handlers; never use the raw value directly.
-    """
+
     from backend.services.guest import hash_fingerprint
     raw = getattr(request.state, "guest_fingerprint", None)
     if not raw:

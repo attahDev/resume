@@ -1,9 +1,4 @@
-"""create password_reset_tokens table
 
-Revision ID: 0004_password_reset
-Revises: 0003_resumes_jobs_analyses
-Create Date: 2026-03-10
-"""
 from typing import Sequence, Union
 from alembic import op
 import sqlalchemy as sa

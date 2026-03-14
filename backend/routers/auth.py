@@ -1,12 +1,4 @@
-"""
-Auth router — register, login, refresh, logout, me.
 
-Security rules:
-- Passwords never in logs, responses, or errors
-- Tokens never logged
-- All auth errors → 401, never 422 or 500
-- Login error always "Invalid credentials" — never reveals email existence
-"""
 import asyncio
 import hashlib
 from datetime import datetime, timezone

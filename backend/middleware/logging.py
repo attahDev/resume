@@ -1,8 +1,3 @@
-"""
-Structured JSON request logging middleware.
-PII scrubber redacts emails, phone numbers, and long strings before logging.
-NEVER logs: request body, file content, tokens, passwords.
-"""
 import re
 import time
 import logging
@@ -32,7 +27,6 @@ _PHONE_RE = re.compile(r"(\+?\d[\d\s\-().]{7,}\d)")
 
 
 def scrub_pii(value: str) -> str:
-    """Redact emails, phones, and long strings from log values."""
     if not isinstance(value, str):
         return value
     if len(value) > 200:

@@ -1,11 +1,4 @@
-"""Service stub: parser — implemented in a later phase."""
-"""
-File parser service.
-Extracts text from PDF and DOCX files.
-OCR fallback for scanned PDFs via pytesseract.
-All extracted text is sanitised before return.
-File content never logged.
-"""
+
 import hashlib
 import logging
 import tempfile
@@ -21,15 +14,12 @@ logger = logging.getLogger("resume_analyzer")
 
 
 def generate_file_hash(file_bytes: bytes) -> str:
-    """SHA-256 hash of raw file bytes — used for deduplication cache."""
+    
     return hashlib.sha256(file_bytes).hexdigest()
 
 
 async def extract_text_from_file(file_bytes: bytes, mime_type: str) -> str:
-    """
-    Route to correct extractor based on detected MIME type.
-    Raises ValueError on unsupported type or parse failure.
-    """
+
     if mime_type == "application/pdf":
         return extract_from_pdf(file_bytes)
     if "wordprocessingml" in mime_type:
@@ -38,12 +28,7 @@ async def extract_text_from_file(file_bytes: bytes, mime_type: str) -> str:
 
 
 def extract_from_pdf(file_bytes: bytes) -> str:
-    """
-    Extract text from a digital PDF using pdfplumber.
-    Falls back to OCR if extracted text is too short (scanned PDF).
-    Uses a temp file that is always deleted after use.
-    """
-    
+
 
     tmp_path = None
     try:
@@ -80,12 +65,6 @@ def extract_from_pdf(file_bytes: bytes) -> str:
 
 
 def extract_from_scanned_pdf(file_bytes: bytes) -> str:
-    """
-    OCR fallback for scanned PDFs.
-    Converts pages to images then runs pytesseract.
-    Limited to 10 pages to prevent memory exhaustion.
-    """
-
 
     MAX_PAGES = 10
 
@@ -102,12 +81,6 @@ def extract_from_scanned_pdf(file_bytes: bytes) -> str:
 
 
 def extract_from_docx(file_bytes: bytes) -> str:
-    """
-    Extract text from DOCX using python-docx.
-    Uses BytesIO — no disk write required.
-    Extracts paragraph text only — skips embedded objects and images.
-    """
-    
 
     try:
         doc = Document(BytesIO(file_bytes))
