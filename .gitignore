@@ -84,7 +84,6 @@ logs/
 *.bin
 *.pt
 *.pth
-models/
 .cache/
 
 # ── Security audit output ─────────────────────────────────
