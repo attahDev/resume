@@ -258,34 +258,6 @@ export default function LandingPage() {
     }
   }, [])
 
-  /* ── Custom cursor ───────────────────────────────────── */
-  useEffect(() => {
-    if (window.innerWidth < 900) return
-    const cur  = curRef.current
-    const curR = curRRef.current
-    if (!cur || !curR) return
-
-    let cx = 0, cy = 0, rx = 0, ry = 0, animId
-
-    const onMove = (e) => { cx = e.clientX; cy = e.clientY }
-    document.addEventListener('mousemove', onMove)
-
-    const loop = () => {
-      animId = requestAnimationFrame(loop)
-      rx += (cx - rx) * 0.13
-      ry += (cy - ry) * 0.13
-      cur.style.left  = cx + 'px'
-      cur.style.top   = cy + 'px'
-      curR.style.left = rx + 'px'
-      curR.style.top  = ry + 'px'
-    }
-    loop()
-
-    return () => {
-      cancelAnimationFrame(animId)
-      document.removeEventListener('mousemove', onMove)
-    }
-  }, [])
 
   /* ── ATS count-up ────────────────────────────────────── */
   useEffect(() => {
