@@ -39,7 +39,7 @@ export default function AppPage() {
   }
 
   const dailyLeft = isAuthenticated && user
-    ? Math.max(0, 50 - (user.daily_analyses_count || 0))
+    ? Math.max(0, 10 - (user.daily_analyses_count || 0))
     : null
 
   return (
