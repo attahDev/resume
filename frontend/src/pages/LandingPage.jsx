@@ -6,10 +6,10 @@ import Nav from '../components/Nav.jsx'
    DATA
 ───────────────────────────────────────────── */
 const TICKER_ITEMS = [
-  'ATS Optimisation', 'Keyword Extraction', 'Job Match Scoring',
-  'Skill Gap Analysis', 'Role Benchmarking', 'Real-time Feedback',
-  'Semantic Scoring', 'LLM-Powered Coaching', 'PDF & DOCX Support',
-  'Privacy First',
+  'ATS Optimisation', 'Section-by-Section Analysis', 'Job Match Scoring',
+  'Skill Gap Detection', 'Delta Scoring', 'Copy-Paste Quick Wins',
+  'Semantic Matching', 'LLM-Powered Coaching', 'PDF & DOCX Support',
+  'Nigerian Market Tuned', 'Privacy First', 'Version Comparison',
 ]
 
 const STEPS = [
@@ -17,11 +17,12 @@ const STEPS = [
     n: '01 / 03',
     icon: (
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-        <path d="M4 16l4-8 4 6 3-4 5 6"/><rect x="3" y="3" width="18" height="18" rx="1"/>
+        <path d="M13 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V9z"/>
+        <polyline points="13 2 13 9 20 9"/>
       </svg>
     ),
-    title: 'Upload Your Resume',
-    desc: 'Drop your PDF or DOCX. Our parser handles any format — one-pager to a decade-long career. OCR included for scanned docs.',
+    title: 'Upload Your CV',
+    desc: 'Drop your PDF or DOCX. Our parser handles any format — one-pager to a decade-long career. OCR included for scanned docs. Your content is AES-256 encrypted at rest.',
   },
   {
     n: '02 / 03',
@@ -32,7 +33,7 @@ const STEPS = [
       </svg>
     ),
     title: 'Paste the Job Description',
-    desc: 'Copy the full JD — role, requirements, everything. The more context you give our AI, the sharper the match score.',
+    desc: 'Copy the full JD — role, requirements, everything. The more context you give, the sharper the match. Works for Nigerian companies and international remote roles.',
   },
   {
     n: '03 / 03',
@@ -41,8 +42,8 @@ const STEPS = [
         <polyline points="20 6 9 17 4 12"/>
       </svg>
     ),
-    title: 'Get Your Score + Fixes',
-    desc: 'Receive a precision match score, ranked skill gaps, keyword suggestions, and LLM coaching — ready to apply.',
+    title: 'Get Your Score + Full Breakdown',
+    desc: 'A precise match score plus a 7-section breakdown — Work Experience, Skills, Summary, Formatting and more. Every gap rated High/Medium/Low. Every fix copy-paste ready.',
   },
 ]
 
@@ -54,19 +55,19 @@ const FEATURES = [
       </svg>
     ),
     title: 'Semantic Job Matching',
-    desc: 'spaCy NLP + sentence-transformers compute deep semantic similarity between your resume and any job description — not just keyword overlap.',
-    tag: 'Core feature',
+    desc: 'spaCy NLP + sentence-transformers compute deep semantic similarity between your CV and any job description — not just keyword overlap. Understands context, not just exact matches.',
+    tag: 'Core engine',
   },
   {
     icon: (
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-        <path d="M13 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V9z"/>
-        <polyline points="13 2 13 9 20 9"/>
+        <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/>
+        <rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/>
       </svg>
     ),
-    title: 'LLM Coaching',
-    desc: 'Groq-powered Llama analysis reads your resume like a senior recruiter — giving you specific rewrite suggestions, not generic tips.',
-    tag: 'Most used',
+    title: 'Section-by-Section Analysis',
+    desc: 'Every part of your CV rated individually — Work Experience, Skills, Summary Statement, Contact Info, Education, Formatting. Each section gets a severity rating and specific suggestions.',
+    tag: 'Most detailed',
   },
   {
     icon: (
@@ -74,9 +75,9 @@ const FEATURES = [
         <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
       </svg>
     ),
-    title: 'Multi-format Parsing',
-    desc: 'PDF, DOCX, and scanned documents via OCR. SHA-256 deduplication means we never parse the same file twice — instant results on re-upload.',
-    tag: 'Reliable',
+    title: 'Delta Scoring',
+    desc: 'Fix your CV, upload a new version, and see exactly how much your score improved. "+18 points" with a breakdown of which sections improved and which gaps you resolved.',
+    tag: 'Unique feature',
   },
   {
     icon: (
@@ -85,7 +86,7 @@ const FEATURES = [
       </svg>
     ),
     title: 'Privacy First',
-    desc: 'Your resume content is Fernet AES-256 encrypted at rest. Guest sessions tracked by anonymous cookie — no account required to start.',
+    desc: 'Your CV is Fernet AES-256 encrypted at rest. Only extracted skills reach our LLM — your name, email, and raw text never leave our server. Guest sessions need no account.',
     tag: 'Secure',
   },
 ]
@@ -97,7 +98,7 @@ const TESTIMONIALS = [
     role: 'Backend Engineer · Paystack',
     city: 'Lagos',
     before: 34, after: 79,
-    text: "I had no idea my resume was so weak on keywords. The tool showed me exactly what to add. Got the Paystack role 3 weeks later — same resume, different targeting.",
+    text: "I had no idea my CV was so weak on keywords. CVMatch showed me exactly what to add section by section. Got the Paystack role 3 weeks later — same experience, better targeting.",
   },
   {
     initials: 'AO',
@@ -105,7 +106,7 @@ const TESTIMONIALS = [
     role: 'DevOps Engineer · Remote',
     city: 'Nairobi',
     before: 41, after: 73,
-    text: "Was applying to US remote roles and kept failing ATS screening. This explained why in plain language. The LLM coaching section alone changed how I write bullet points.",
+    text: "Was applying to US remote roles and kept failing ATS screening. The section breakdown showed my Work Experience was rated High severity — I rewrote my bullets and got callbacks.",
   },
   {
     initials: 'KM',
@@ -113,7 +114,7 @@ const TESTIMONIALS = [
     role: 'Full Stack Developer',
     city: 'Accra',
     before: 52, after: 88,
-    text: "Applied to Andela three times. Used this on the fourth attempt. Finally got through screening. The skill gap view showed me what they were actually looking for.",
+    text: "Used the delta scoring to track every version of my CV. Went from 52 to 88 in three revisions. The copy-paste quick wins saved me hours — I just applied each suggestion directly.",
   },
 ]
 
@@ -121,11 +122,11 @@ const TESTIMONIALS = [
    COMPONENT
 ───────────────────────────────────────────── */
 export default function LandingPage() {
-  const canvasRef  = useRef(null)
-  const cardRef    = useRef(null)
-  const holoRef    = useRef(null)
-  const sceneRef   = useRef(null)
-  const atsRef     = useRef(null)
+  const canvasRef = useRef(null)
+  const cardRef   = useRef(null)
+  const holoRef   = useRef(null)
+  const sceneRef  = useRef(null)
+  const atsRef    = useRef(null)
 
   /* ── Particle canvas ─────────────────────────────────── */
   useEffect(() => {
@@ -161,7 +162,6 @@ export default function LandingPage() {
     document.addEventListener('mousemove', onMove)
 
     const LINK_DIST = 120
-
     const draw = () => {
       animId = requestAnimationFrame(draw)
       ctx.clearRect(0, 0, canvas.width, canvas.height)
@@ -172,7 +172,6 @@ export default function LandingPage() {
         if (p.x > canvas.width)  p.x = 0
         if (p.y < 0) p.y = canvas.height
         if (p.y > canvas.height) p.y = 0
-
         const dx = p.x - mx, dy = p.y - my
         const dist = Math.sqrt(dx * dx + dy * dy)
         if (dist < 90) {
@@ -180,7 +179,6 @@ export default function LandingPage() {
           p.x += dx / dist * f
           p.y += dy / dist * f
         }
-
         ctx.beginPath()
         ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2)
         ctx.fillStyle = `rgba(0,255,135,${p.a})`
@@ -218,7 +216,7 @@ export default function LandingPage() {
     const card  = cardRef.current
     const holo  = holoRef.current
     if (!scene || !card || !holo) return
-    if (window.innerWidth < 900) return  // disable on mobile
+    if (window.innerWidth < 900) return
 
     let tRX = 0, tRY = 0, cRX = 0, cRY = 0
     let animId
@@ -257,7 +255,6 @@ export default function LandingPage() {
       document.removeEventListener('mouseleave', onLeave)
     }
   }, [])
-
 
   /* ── ATS count-up ────────────────────────────────────── */
   useEffect(() => {
@@ -309,53 +306,45 @@ export default function LandingPage() {
 
   return (
     <>
-      {/* Google Fonts */}
       <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=Syne:wght@300;400;600;700;800&display=swap" rel="stylesheet"/>
-
       <style>{CSS}</style>
-
-
-
-      {/* Noise overlay */}
       <div className="noise" />
-
-      {/* ── NAV ───────────────────────────────────────────── */}
       <Nav />
 
-      {/* ── HERO ──────────────────────────────────────────── */}
+      {/* ── HERO ── */}
       <section className="hero">
         <canvas ref={canvasRef} id="hero-canvas" />
 
-        {/* Left */}
         <div className="hero-left">
           <div className="hero-eyebrow">
             <span className="eyebrow-dot" />
-            AI-Powered Resume Intelligence
+            AI-Powered CV Intelligence · Built for Africa
           </div>
           <h1>
-            Your resume.<br />
-            <span className="line2">Decoded.</span><br />
-            <span className="line3">Perfected.</span>
+            Know exactly<br />
+            <span className="line2">why you're</span><br />
+            <span className="line3">not getting calls.</span>
           </h1>
           <p className="hero-desc">
-            ResumeAI cross-references every line of your resume against real job signals —
-            giving you a precise, actionable match score before you ever hit send.
+            CVMatch scores your CV against any job description, breaks down every section
+            with severity ratings, and gives you copy-paste fixes — not generic advice.
+            Built for Nigerian and African tech professionals.
           </p>
           <div className="hero-actions">
-            <Link to="/app"      className="btn-hero">Analyze My Resume</Link>
-            <Link to="/register" className="btn-outline">Start Free</Link>
+            <Link to="/app"      className="btn-hero">Match My CV Free</Link>
+            <Link to="/register" className="btn-outline">Create Account</Link>
           </div>
           <div className="hero-stats">
             <div className="hstat">
-              <span className="hstat-val">91%</span>
-              <span className="hstat-label">Match Accuracy</span>
+              <span className="hstat-val">7</span>
+              <span className="hstat-label">CV Sections Analysed</span>
             </div>
             <div className="hstat">
               <span className="hstat-val">~15s</span>
-              <span className="hstat-label">Avg Scan Time</span>
+              <span className="hstat-label">Full Analysis Time</span>
             </div>
             <div className="hstat">
-              <span className="hstat-val">5 Free</span>
+              <span className="hstat-val">3 Free</span>
               <span className="hstat-label">No Account Needed</span>
             </div>
           </div>
@@ -375,7 +364,7 @@ export default function LandingPage() {
                 <div className="ca bl" /><div className="ca br" />
                 <div className="card-body">
                   <div className="card-top-row">
-                    <div className="card-badge">Resume · Analyzed</div>
+                    <div className="card-badge">CV · Analysed</div>
                     <div className="ats-block">
                       <span className="ats-label">Match Score</span>
                       <div className="ats-val">
@@ -403,11 +392,11 @@ export default function LandingPage() {
                   <div className="sl">Skill Analysis</div>
 
                   {[
-                    { name: 'Python',      w: '91%', delay: '.2s'  },
-                    { name: 'FastAPI',     w: '87%', delay: '.35s' },
-                    { name: 'PostgreSQL',  w: '82%', delay: '.5s'  },
-                    { name: 'Docker',      w: '74%', delay: '.65s' },
-                    { name: 'AWS',         w: '58%', delay: '.8s'  },
+                    { name: 'Python',     w: '91%', delay: '.2s'  },
+                    { name: 'FastAPI',    w: '87%', delay: '.35s' },
+                    { name: 'PostgreSQL', w: '82%', delay: '.5s'  },
+                    { name: 'Docker',     w: '74%', delay: '.65s' },
+                    { name: 'AWS',        w: '58%', delay: '.8s'  },
                   ].map(s => (
                     <div className="skrow" key={s.name}>
                       <span className="skn">{s.name}</span>
@@ -416,12 +405,25 @@ export default function LandingPage() {
                     </div>
                   ))}
 
-                  <div className="tags">
-                    <span className="tg">5 yrs exp</span>
-                    <span className="tg">Remote</span>
-                    <span className="tg">Open Source</span>
-                    <span className="tg">Agile</span>
-                    <span className="tg">Full-Time</span>
+                  {/* Section severity indicators */}
+                  <div className="div" style={{ marginTop: 14 }} />
+                  <div className="sl">Section Breakdown</div>
+                  <div className="sev-row">
+                    <div className="sev-item">
+                      <span className="sev-dot sev-high" />
+                      <span className="sev-label">Work Exp</span>
+                      <span className="sev-val sev-high-text">High</span>
+                    </div>
+                    <div className="sev-item">
+                      <span className="sev-dot sev-med" />
+                      <span className="sev-label">Skills</span>
+                      <span className="sev-val sev-med-text">Medium</span>
+                    </div>
+                    <div className="sev-item">
+                      <span className="sev-dot sev-low" />
+                      <span className="sev-label">Education</span>
+                      <span className="sev-val sev-low-text">Low</span>
+                    </div>
                   </div>
 
                   <div className="card-foot">
@@ -435,7 +437,7 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* ── TICKER ────────────────────────────────────────── */}
+      {/* ── TICKER ── */}
       <div className="ticker-wrap">
         <div className="ticker">
           {[...TICKER_ITEMS, ...TICKER_ITEMS].map((t, i) => (
@@ -444,11 +446,11 @@ export default function LandingPage() {
         </div>
       </div>
 
-      {/* ── HOW IT WORKS ──────────────────────────────────── */}
+      {/* ── HOW IT WORKS ── */}
       <section className="how" id="how">
         <div className="reveal"><div className="section-tag">Process</div></div>
         <div className="reveal">
-          <h2 className="section-title">Three steps to your<br /><span>dream role</span></h2>
+          <h2 className="section-title">Three steps to your<br /><span>next role</span></h2>
         </div>
         <div className="how-grid reveal">
           {STEPS.map((s) => (
@@ -463,11 +465,11 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* ── FEATURES ──────────────────────────────────────── */}
+      {/* ── FEATURES ── */}
       <section id="features" style={{ borderBottom: '1px solid var(--border)' }}>
         <div className="reveal"><div className="section-tag">Capabilities</div></div>
         <div className="reveal">
-          <h2 className="section-title">Everything your resume<br /><span>needs to win</span></h2>
+          <h2 className="section-title">Not just a score.<br /><span>A full breakdown.</span></h2>
         </div>
         <div className="features-grid">
           {FEATURES.map((f) => (
@@ -481,11 +483,11 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* ── TESTIMONIALS ──────────────────────────────────── */}
+      {/* ── TESTIMONIALS ── */}
       <section id="proof">
         <div className="reveal"><div className="section-tag">Social Proof</div></div>
         <div className="reveal">
-          <h2 className="section-title">African devs who<br /><span>landed their roles</span></h2>
+          <h2 className="section-title">African professionals who<br /><span>landed their roles</span></h2>
         </div>
         <div className="testi-grid">
           {TESTIMONIALS.map((t) => (
@@ -509,36 +511,43 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* ── VALUE STRIP ───────────────────────────────────── */}
+      {/* ── VALUE STRIP ── */}
       <div className="value-strip reveal">
-        {['Free to use', 'No account needed', 'Results in ~15 seconds', 'AES-256 encrypted', 'Built for African professionals'].map(v => (
+        {[
+          'Free to start',
+          'No account needed',
+          'Results in ~15 seconds',
+          'AES-256 encrypted',
+          '7 CV sections analysed',
+          'Built for African professionals',
+        ].map(v => (
           <span key={v}><span className="v-check">✓</span> {v}</span>
         ))}
       </div>
 
-      {/* ── CTA BAND ──────────────────────────────────────── */}
+      {/* ── CTA BAND ── */}
       <section className="cta-band">
         <div className="cta-big reveal">
           Stop guessing.<br />
-          <span className="ghost-text">Start winning.</span>
+          <span className="ghost-text">Start matching.</span>
         </div>
         <p className="cta-sub reveal">
-          Your next role is one optimised resume away.<br />
-          5 free analyses. No account. No credit card.
+          Your next role is one targeted CV away.<br />
+          3 free analyses. No account. No credit card.
         </p>
         <div className="cta-actions reveal">
-          <Link to="/app"      className="btn-hero">Analyze My Resume Free</Link>
+          <Link to="/app"      className="btn-hero">Match My CV Free</Link>
           <Link to="/register" className="btn-outline">Create Account</Link>
         </div>
       </section>
 
-      {/* ── FOOTER ────────────────────────────────────────── */}
+      {/* ── FOOTER ── */}
       <footer>
         <div className="foot-brand">
-          <div className="foot-logo">ResumeAI<span style={{ opacity: 0.4 }}>_</span></div>
+          <div className="foot-logo">CV<span style={{ opacity: 0.5 }}>Match</span></div>
           <p className="foot-desc">
-            AI-powered resume intelligence for African tech professionals.
-            Decode your resume. Land your role.
+            AI-powered CV matching and analysis for African tech professionals.
+            Know your score. Fix your gaps. Land your role.
           </p>
           <div className="foot-cities">Lagos · Nairobi · Accra · Kigali · Johannesburg</div>
         </div>
@@ -547,7 +556,7 @@ export default function LandingPage() {
           <ul className="foot-links">
             <li><a href="#how">How it Works</a></li>
             <li><a href="#features">Features</a></li>
-            <li><Link to="/app">Analyze Free</Link></li>
+            <li><Link to="/app">Analyse Free</Link></li>
             <li><Link to="/register">Create Account</Link></li>
           </ul>
         </div>
@@ -562,7 +571,7 @@ export default function LandingPage() {
       </footer>
 
       <div className="foot-bottom">
-        <div className="foot-copy">© {new Date().getFullYear()} ResumeAI · Built for African tech professionals</div>
+        <div className="foot-copy">© {new Date().getFullYear()} CVMatch · Built for African tech professionals</div>
         <div className="foot-status">
           <div className="pdot" />
           All systems operational
@@ -573,8 +582,7 @@ export default function LandingPage() {
 }
 
 /* ─────────────────────────────────────────────
-   CSS — full template styles in JS string
-   (avoids needing a separate .css file)
+   CSS
 ───────────────────────────────────────────── */
 const CSS = `
 :root {
@@ -590,17 +598,8 @@ const CSS = `
 
 *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
 html { scroll-behavior: smooth; }
+body { background: var(--bg); color: var(--text); font-family: 'Syne', sans-serif; overflow-x: hidden; }
 
-body {
-  background: var(--bg);
-  color: var(--text);
-  font-family: 'Syne', sans-serif;
-  overflow-x: hidden;
-}
-
-
-
-/* ── NOISE ── */
 .noise {
   position: fixed; inset: 0; pointer-events: none; z-index: 1; opacity: 0.03;
   background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
@@ -647,10 +646,7 @@ body {
   opacity: 0; animation: fadeUp .8s .4s forwards;
 }
 .hero h1 .line2 { color: var(--g); }
-.hero h1 .line3 {
-  -webkit-text-stroke: 1px rgba(0,255,135,0.4);
-  color: transparent; font-weight: 800;
-}
+.hero h1 .line3 { -webkit-text-stroke: 1px rgba(0,255,135,0.4); color: transparent; font-weight: 800; }
 .hero-desc {
   margin-top: 24px; font-size: 16px; line-height: 1.75;
   color: var(--muted); max-width: 440px; font-weight: 300;
@@ -676,8 +672,7 @@ body {
 .btn-hero:hover { box-shadow: 0 0 48px rgba(0,255,135,0.5); transform: translateY(-2px); }
 .btn-outline {
   font-family: 'DM Mono', monospace; font-size: 11px; letter-spacing: 0.25em;
-  color: var(--g); background: transparent;
-  border: 1px solid rgba(0,255,135,0.3);
+  color: var(--g); background: transparent; border: 1px solid rgba(0,255,135,0.3);
   padding: 16px 40px; text-transform: uppercase; cursor: pointer;
   transition: all .25s; text-decoration: none; display: inline-flex; align-items: center;
 }
@@ -690,12 +685,12 @@ body {
 .hstat-val { font-family: 'DM Mono', monospace; font-size: 26px; color: var(--g); font-weight: 500; }
 .hstat-label { font-size: 11px; letter-spacing: 0.15em; color: var(--muted); text-transform: uppercase; }
 
-/* ── HERO RIGHT (card) ── */
+/* ── HERO RIGHT ── */
 .hero-right {
   display: flex; align-items: center; justify-content: center;
   z-index: 2; opacity: 0; animation: fadeRight .9s .5s forwards;
 }
-.scene { perspective: 900px; width: 340px; height: 480px; position: relative; }
+.scene { perspective: 900px; width: 340px; height: 520px; position: relative; }
 .card-wrap { width: 100%; height: 100%; transform-style: preserve-3d; transition: transform .08s ease-out; }
 .card-outer {
   position: absolute; inset: 0; border-radius: 6px;
@@ -704,10 +699,7 @@ body {
   box-shadow: 0 0 0 1px rgba(0,255,135,0.06), 0 40px 100px rgba(0,0,0,0.9),
     0 0 80px rgba(0,255,135,0.07), inset 0 1px 0 rgba(0,255,135,0.18);
 }
-.holo-layer {
-  position: absolute; inset: 0; pointer-events: none; z-index: 10;
-  border-radius: 6px; transition: background .05s;
-}
+.holo-layer { position: absolute; inset: 0; pointer-events: none; z-index: 10; border-radius: 6px; transition: background .05s; }
 .scanline {
   position: absolute; left: 0; right: 0; height: 2px; z-index: 12;
   background: linear-gradient(90deg, transparent, rgba(0,255,135,0.7) 50%, transparent);
@@ -722,7 +714,7 @@ body {
   0%   { top: -2px; opacity: 0; }
   5%   { opacity: 1; }
   95%  { opacity: 1; }
-  100% { top: 482px; opacity: 0; }
+  100% { top: 522px; opacity: 0; }
 }
 .lines-tex {
   position: absolute; inset: 0; pointer-events: none; z-index: 2;
@@ -733,10 +725,7 @@ body {
 .ca.tr { top: 12px; right: 12px; border-top: 1.5px solid var(--g); border-right: 1.5px solid var(--g); }
 .ca.bl { bottom: 12px; left: 12px; border-bottom: 1.5px solid var(--g); border-left: 1.5px solid var(--g); }
 .ca.br { bottom: 12px; right: 12px; border-bottom: 1.5px solid var(--g); border-right: 1.5px solid var(--g); }
-.card-body {
-  position: relative; z-index: 8; padding: 30px 28px;
-  height: 100%; display: flex; flex-direction: column; gap: 0;
-}
+.card-body { position: relative; z-index: 8; padding: 30px 28px; height: 100%; display: flex; flex-direction: column; gap: 0; }
 .card-top-row { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px; }
 .card-badge {
   font-family: 'DM Mono', monospace; font-size: 8px; letter-spacing: 0.35em; color: var(--g);
@@ -771,6 +760,20 @@ body {
 }
 @keyframes fillBar { from { width: 0%; opacity: 0; } to { width: var(--w); opacity: 1; } }
 .skp { font-family: 'DM Mono', monospace; font-size: 8px; color: rgba(0,255,135,0.4); width: 26px; text-align: right; }
+
+/* Section severity rows */
+.sev-row { display: flex; flex-direction: column; gap: 6px; margin-top: 4px; }
+.sev-item { display: flex; align-items: center; gap: 8px; }
+.sev-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+.sev-dot.sev-high { background: #FF3B3B; box-shadow: 0 0 6px #FF3B3B88; }
+.sev-dot.sev-med  { background: #FB923C; box-shadow: 0 0 6px #FB923C88; }
+.sev-dot.sev-low  { background: var(--g); box-shadow: 0 0 6px rgba(0,255,135,0.5); }
+.sev-label { font-family: 'DM Mono', monospace; font-size: 8px; color: rgba(212,245,233,0.45); flex: 1; letter-spacing: 0.1em; text-transform: uppercase; }
+.sev-val { font-family: 'DM Mono', monospace; font-size: 8px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; }
+.sev-high-text { color: #FF3B3B; }
+.sev-med-text  { color: #FB923C; }
+.sev-low-text  { color: var(--g); }
+
 .tags { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 14px; }
 .tg {
   font-family: 'DM Mono', monospace; font-size: 8px; letter-spacing: 0.12em;
@@ -781,44 +784,22 @@ body {
   margin-top: auto; padding-top: 14px; border-top: 1px solid rgba(0,255,135,0.08);
   display: flex; justify-content: space-between; align-items: center;
 }
-.prow {
-  display: flex; align-items: center; gap: 6px; font-family: 'DM Mono', monospace;
-  font-size: 8px; color: rgba(0,255,135,0.4); letter-spacing: 0.15em; text-transform: uppercase;
-}
-.pdot {
-  width: 5px; height: 5px; border-radius: 50%; background: var(--g);
-  box-shadow: 0 0 6px var(--g); animation: pdot 2s infinite; flex-shrink: 0;
-}
+.prow { display: flex; align-items: center; gap: 6px; font-family: 'DM Mono', monospace; font-size: 8px; color: rgba(0,255,135,0.4); letter-spacing: 0.15em; text-transform: uppercase; }
+.pdot { width: 5px; height: 5px; border-radius: 50%; background: var(--g); box-shadow: 0 0 6px var(--g); animation: pdot 2s infinite; flex-shrink: 0; }
 @keyframes pdot { 0%,100% { opacity:1; transform:scale(1); } 50% { opacity:0.4; transform:scale(0.7); } }
 .cid { font-family: 'DM Mono', monospace; font-size: 8px; color: rgba(0,255,135,0.2); letter-spacing: 0.1em; }
-.card-glow {
-  position: absolute; inset: -60px; pointer-events: none; z-index: -1; border-radius: 50%;
-  background: radial-gradient(ellipse at center, rgba(0,255,135,0.08) 0%, transparent 60%);
-  transition: opacity .3s;
-}
+.card-glow { position: absolute; inset: -60px; pointer-events: none; z-index: -1; border-radius: 50%; background: radial-gradient(ellipse at center, rgba(0,255,135,0.08) 0%, transparent 60%); }
 
 /* ── TICKER ── */
-.ticker-wrap {
-  overflow: hidden; padding: 20px 0;
-  border-top: 1px solid var(--border); border-bottom: 1px solid var(--border);
-  background: var(--bg2);
-}
-.ticker { display: flex; gap: 0; animation: tick 28s linear infinite; white-space: nowrap; }
-.ticker-item {
-  font-family: 'DM Mono', monospace; font-size: 11px; letter-spacing: 0.3em;
-  color: rgba(0,255,135,0.3); text-transform: uppercase;
-  padding: 0 40px; display: flex; align-items: center; gap: 20px;
-}
+.ticker-wrap { overflow: hidden; padding: 20px 0; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); background: var(--bg2); }
+.ticker { display: flex; gap: 0; animation: tick 32s linear infinite; white-space: nowrap; }
+.ticker-item { font-family: 'DM Mono', monospace; font-size: 11px; letter-spacing: 0.3em; color: rgba(0,255,135,0.3); text-transform: uppercase; padding: 0 40px; display: flex; align-items: center; gap: 20px; }
 .ticker-item span { color: var(--g); opacity: 0.6; }
 @keyframes tick { from { transform: translateX(0); } to { transform: translateX(-50%); } }
 
 /* ── SECTIONS ── */
 section { padding: 120px 56px; position: relative; }
-.section-tag {
-  font-family: 'DM Mono', monospace; font-size: 9px; letter-spacing: 0.45em;
-  color: var(--g); text-transform: uppercase; margin-bottom: 20px;
-  display: inline-flex; align-items: center; gap: 10px;
-}
+.section-tag { font-family: 'DM Mono', monospace; font-size: 9px; letter-spacing: 0.45em; color: var(--g); text-transform: uppercase; margin-bottom: 20px; display: inline-flex; align-items: center; gap: 10px; }
 .section-tag::before { content: ''; width: 24px; height: 1px; background: var(--g); opacity: 0.5; }
 .section-title { font-size: clamp(32px,4vw,54px); font-weight: 800; letter-spacing: -0.02em; line-height: 1.1; }
 .section-title span { color: var(--g); }
@@ -826,82 +807,39 @@ section { padding: 120px 56px; position: relative; }
 /* ── HOW ── */
 .how { background: var(--bg2); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
 .how-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 2px; margin-top: 64px; border: 1px solid var(--border); }
-.how-step {
-  padding: 48px 36px; position: relative;
-  border-right: 1px solid var(--border); transition: background .3s;
-}
+.how-step { padding: 48px 36px; position: relative; border-right: 1px solid var(--border); transition: background .3s; }
 .how-step:last-child { border-right: none; }
 .how-step:hover { background: var(--g3); }
 .step-num { font-family: 'DM Mono', monospace; font-size: 11px; letter-spacing: 0.3em; color: rgba(0,255,135,0.25); margin-bottom: 32px; }
-.step-icon {
-  width: 52px; height: 52px; border: 1px solid rgba(0,255,135,0.2);
-  display: flex; align-items: center; justify-content: center;
-  margin-bottom: 24px; background: var(--g3); transition: border-color .3s, box-shadow .3s;
-}
+.step-icon { width: 52px; height: 52px; border: 1px solid rgba(0,255,135,0.2); display: flex; align-items: center; justify-content: center; margin-bottom: 24px; background: var(--g3); transition: border-color .3s, box-shadow .3s; }
 .how-step:hover .step-icon { border-color: rgba(0,255,135,0.5); box-shadow: 0 0 24px rgba(0,255,135,0.1); }
 .step-icon svg { width: 24px; height: 24px; color: var(--g); }
 .step-title { font-size: 20px; font-weight: 700; margin-bottom: 12px; letter-spacing: -0.01em; }
 .step-desc { font-size: 14px; line-height: 1.7; color: var(--muted); font-weight: 300; }
-.step-line {
-  position: absolute; top: 0; left: 0; right: 0; height: 2px;
-  background: linear-gradient(90deg, var(--g), transparent);
-  transform: scaleX(0); transform-origin: left;
-  transition: transform .4s cubic-bezier(0.16,1,0.3,1);
-}
+.step-line { position: absolute; top: 0; left: 0; right: 0; height: 2px; background: linear-gradient(90deg, var(--g), transparent); transform: scaleX(0); transform-origin: left; transition: transform .4s cubic-bezier(0.16,1,0.3,1); }
 .how-step:hover .step-line { transform: scaleX(1); }
 
 /* ── FEATURES ── */
 .features-grid { display: grid; grid-template-columns: repeat(2,1fr); gap: 24px; margin-top: 64px; }
-.feat-card {
-  padding: 40px; border: 1px solid var(--border);
-  position: relative; overflow: hidden;
-  transition: border-color .3s, transform .3s;
-  background: linear-gradient(145deg, rgba(0,255,135,0.03), transparent);
-}
+.feat-card { padding: 40px; border: 1px solid var(--border); position: relative; overflow: hidden; transition: border-color .3s, transform .3s; background: linear-gradient(145deg, rgba(0,255,135,0.03), transparent); }
 .feat-card:hover { border-color: rgba(0,255,135,0.35); transform: translateY(-4px); }
-.feat-card::after {
-  content: ''; position: absolute; inset: 0;
-  background: radial-gradient(circle at top left, rgba(0,255,135,0.06), transparent 60%);
-  opacity: 0; transition: opacity .3s;
-}
+.feat-card::after { content: ''; position: absolute; inset: 0; background: radial-gradient(circle at top left, rgba(0,255,135,0.06), transparent 60%); opacity: 0; transition: opacity .3s; }
 .feat-card:hover::after { opacity: 1; }
-.feat-icon {
-  width: 44px; height: 44px; border: 1px solid rgba(0,255,135,0.2);
-  display: flex; align-items: center; justify-content: center;
-  margin-bottom: 20px; background: var(--g3);
-}
+.feat-icon { width: 44px; height: 44px; border: 1px solid rgba(0,255,135,0.2); display: flex; align-items: center; justify-content: center; margin-bottom: 20px; background: var(--g3); }
 .feat-icon svg { width: 20px; height: 20px; color: var(--g); }
 .feat-title { font-size: 20px; font-weight: 700; margin-bottom: 10px; letter-spacing: -0.01em; }
 .feat-desc { font-size: 14px; line-height: 1.7; color: var(--muted); font-weight: 300; }
-.feat-tag {
-  margin-top: 20px; display: inline-block;
-  font-family: 'DM Mono', monospace; font-size: 9px; letter-spacing: 0.2em;
-  color: var(--g); text-transform: uppercase;
-  border-bottom: 1px solid rgba(0,255,135,0.3); padding-bottom: 2px;
-}
+.feat-tag { margin-top: 20px; display: inline-block; font-family: 'DM Mono', monospace; font-size: 9px; letter-spacing: 0.2em; color: var(--g); text-transform: uppercase; border-bottom: 1px solid rgba(0,255,135,0.3); padding-bottom: 2px; }
 
 /* ── TESTIMONIALS ── */
 .testi-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 20px; margin-top: 64px; }
-.testi-card {
-  padding: 36px; border: 1px solid var(--border);
-  position: relative; transition: border-color .3s;
-}
+.testi-card { padding: 36px; border: 1px solid var(--border); position: relative; transition: border-color .3s; }
 .testi-card:hover { border-color: rgba(0,255,135,0.3); }
-.testi-card::before {
-  content: '"'; position: absolute; top: 24px; right: 28px;
-  font-size: 80px; color: rgba(0,255,135,0.06); font-family: 'Syne', sans-serif;
-  font-weight: 800; line-height: 1; pointer-events: none;
-}
+.testi-card::before { content: '"'; position: absolute; top: 24px; right: 28px; font-size: 80px; color: rgba(0,255,135,0.06); font-family: 'Syne', sans-serif; font-weight: 800; line-height: 1; pointer-events: none; }
 .stars { display: flex; gap: 4px; margin-bottom: 18px; color: var(--g); font-size: 12px; }
 .testi-text { font-size: 14px; line-height: 1.75; color: var(--muted); font-weight: 300; margin-bottom: 24px; }
 .testi-author { display: flex; align-items: center; gap: 12px; }
-.testi-av {
-  width: 36px; height: 36px; border-radius: 50%; flex-shrink: 0;
-  border: 1px solid rgba(0,255,135,0.25);
-  background: radial-gradient(circle at 35% 35%, rgba(0,255,135,0.2), rgba(0,255,135,0.05));
-  display: flex; align-items: center; justify-content: center;
-  font-size: 11px; font-weight: 700; color: var(--g); font-family: 'DM Mono', monospace;
-}
+.testi-av { width: 36px; height: 36px; border-radius: 50%; flex-shrink: 0; border: 1px solid rgba(0,255,135,0.25); background: radial-gradient(circle at 35% 35%, rgba(0,255,135,0.2), rgba(0,255,135,0.05)); display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; color: var(--g); font-family: 'DM Mono', monospace; }
 .testi-name { font-size: 13px; font-weight: 600; color: var(--text); }
 .testi-role { font-family: 'DM Mono', monospace; font-size: 9px; color: var(--muted); letter-spacing: 0.1em; text-transform: uppercase; margin-top: 1px; }
 .testi-score { margin-left: auto; display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
@@ -910,40 +848,19 @@ section { padding: 120px 56px; position: relative; }
 .score-after  { font-family: 'DM Mono', monospace; font-size: 20px; font-weight: 700; color: var(--g); }
 
 /* ── VALUE STRIP ── */
-.value-strip {
-  display: flex; flex-wrap: wrap; gap: 24px; justify-content: center;
-  padding: 18px 56px;
-  border-top: 1px solid var(--border); border-bottom: 1px solid var(--border);
-  background: var(--bg2);
-  font-family: 'DM Mono', monospace; font-size: 11px; letter-spacing: 0.06em; color: var(--muted);
-}
+.value-strip { display: flex; flex-wrap: wrap; gap: 24px; justify-content: center; padding: 18px 56px; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); background: var(--bg2); font-family: 'DM Mono', monospace; font-size: 11px; letter-spacing: 0.06em; color: var(--muted); }
 .v-check { color: var(--g); margin-right: 4px; }
 
 /* ── CTA BAND ── */
-.cta-band {
-  padding: 120px 56px;
-  display: flex; flex-direction: column; align-items: center; justify-content: center;
-  text-align: center; position: relative; overflow: hidden;
-  border-top: 1px solid var(--border);
-}
-.cta-band::before {
-  content: ''; position: absolute; top: 50%; left: 50%;
-  transform: translate(-50%,-50%);
-  width: 800px; height: 400px; border-radius: 50%;
-  background: radial-gradient(ellipse, rgba(0,255,135,0.07), transparent 65%);
-  pointer-events: none;
-}
+.cta-band { padding: 120px 56px; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; position: relative; overflow: hidden; border-top: 1px solid var(--border); }
+.cta-band::before { content: ''; position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%); width: 800px; height: 400px; border-radius: 50%; background: radial-gradient(ellipse, rgba(0,255,135,0.07), transparent 65%); pointer-events: none; }
 .cta-big { font-size: clamp(40px,6vw,88px); font-weight: 800; letter-spacing: -0.03em; line-height: 1; margin-bottom: 24px; }
 .ghost-text { -webkit-text-stroke: 1px rgba(0,255,135,0.35); color: transparent; }
 .cta-sub { font-size: 16px; color: var(--muted); max-width: 480px; line-height: 1.7; font-weight: 300; margin-bottom: 40px; }
 .cta-actions { display: flex; gap: 14px; flex-wrap: wrap; justify-content: center; }
 
 /* ── FOOTER ── */
-footer {
-  padding: 56px 56px 40px;
-  border-top: 1px solid var(--border);
-  display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 48px;
-}
+footer { padding: 56px 56px 40px; border-top: 1px solid var(--border); display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 48px; }
 .foot-brand { display: flex; flex-direction: column; gap: 12px; }
 .foot-logo { font-family: 'DM Mono', monospace; font-size: 18px; font-weight: 500; color: var(--g); letter-spacing: 0.08em; }
 .foot-desc { font-size: 13px; color: var(--muted); line-height: 1.7; font-weight: 300; max-width: 280px; }
@@ -952,10 +869,7 @@ footer {
 .foot-links { list-style: none; display: flex; flex-direction: column; gap: 10px; }
 .foot-links a { font-size: 13px; color: var(--muted); text-decoration: none; transition: color .2s; font-weight: 300; }
 .foot-links a:hover { color: var(--g); }
-.foot-bottom {
-  padding: 24px 56px; border-top: 1px solid rgba(0,255,135,0.06);
-  display: flex; justify-content: space-between; align-items: center;
-}
+.foot-bottom { padding: 24px 56px; border-top: 1px solid rgba(0,255,135,0.06); display: flex; justify-content: space-between; align-items: center; }
 .foot-copy { font-family: 'DM Mono', monospace; font-size: 10px; color: rgba(0,255,135,0.2); letter-spacing: 0.15em; }
 .foot-status { display: flex; align-items: center; gap: 8px; font-family: 'DM Mono', monospace; font-size: 10px; color: rgba(0,255,135,0.3); letter-spacing: 0.15em; }
 
@@ -973,11 +887,10 @@ footer {
   .testi-grid .testi-card:last-child { display: none; }
   .features-grid { grid-template-columns: 1fr; }
 }
-
 @media (max-width: 900px) {
   .hero { grid-template-columns: 1fr; padding: 100px 24px 60px; gap: 48px; }
   .hero-right { order: -1; }
-  .scene { width: 300px; height: 420px; }
+  .scene { width: 300px; height: 460px; }
   section { padding: 80px 24px; }
   .how-grid { grid-template-columns: 1fr; }
   .how-step { border-right: none; border-bottom: 1px solid var(--border); }
@@ -991,14 +904,13 @@ footer {
   .value-strip { padding: 16px 24px; gap: 16px; font-size: 10px; }
   .hero-stats { gap: 24px; }
 }
-
 @media (max-width: 640px) {
   .hero { padding: 90px 16px 48px; gap: 36px; }
   .hero h1 { font-size: clamp(36px, 10vw, 56px); }
   .hero-desc { font-size: 14px; }
   .hero-actions { flex-direction: column; align-items: flex-start; }
   .btn-hero, .btn-outline { width: 100%; justify-content: center; padding: 14px 24px; }
-  .scene { width: 280px; height: 390px; }
+  .scene { width: 280px; height: 420px; }
   section { padding: 60px 16px; }
   .how-step { padding: 32px 24px; }
   .feat-card { padding: 28px 24px; }

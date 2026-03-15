@@ -1,9 +1,8 @@
-
 import asyncio
 import hashlib
 from datetime import datetime, timezone
 
-from fastapi import APIRouter, Depends, HTTPException, status, Request
+from fastapi import APIRouter, Depends, HTTPException, status, Request, Response
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 
@@ -24,15 +23,35 @@ from backend.security.auth import (
     get_current_user,
 )
 from backend.security.rate_limit import limiter
+from backend.config import settings
 
 router = APIRouter()
+
+COOKIE_NAME = "rt"
+COOKIE_MAX_AGE = 60 * 60 * 24 * settings.REFRESH_TOKEN_EXPIRE_DAYS  # seconds
 
 
 def _hash_token(token: str) -> str:
     return hashlib.sha256(token.encode()).hexdigest()
 
 
-# ── Register ─────────────────────────────────────────────────────────────────
+def _set_refresh_cookie(response: Response, token: str) -> None:
+    response.set_cookie(
+        key=COOKIE_NAME,
+        value=token,
+        httponly=True,
+        secure=settings.ENV == "production",
+        samesite="lax",
+        max_age=COOKIE_MAX_AGE,
+        path="/auth",   # only sent to /auth/* endpoints
+    )
+
+
+def _clear_refresh_cookie(response: Response) -> None:
+    response.delete_cookie(key=COOKIE_NAME, path="/auth")
+
+
+# ── Register ──────────────────────────────────────────────────────────────────
 @router.post("/register", response_model=UserResponse, status_code=status.HTTP_201_CREATED)
 @limiter.limit("5/minute")
 async def register(
@@ -40,12 +59,10 @@ async def register(
     body: RegisterRequest,
     db: AsyncSession = Depends(get_db),
 ):
-    # Password strength check
     errors = check_password_strength(body.password)
     if errors:
         raise HTTPException(status_code=400, detail={"errors": errors})
 
-    # Duplicate email check
     result = await db.execute(select(User).where(User.email == body.email.lower()))
     if result.scalar_one_or_none():
         raise HTTPException(status_code=409, detail="An account with this email already exists.")
@@ -66,12 +83,12 @@ async def register(
 async def login(
     request: Request,
     body: LoginRequest,
+    response: Response,
     db: AsyncSession = Depends(get_db),
 ):
     result = await db.execute(select(User).where(User.email == body.email.lower()))
     user = result.scalar_one_or_none()
 
-    # Timing-safe: always delay if user not found to prevent email enumeration
     if not user:
         await asyncio.sleep(0.1)
         raise HTTPException(status_code=401, detail="Invalid credentials")
@@ -82,26 +99,35 @@ async def login(
     if not user.is_active:
         raise HTTPException(status_code=401, detail="Invalid credentials")
 
-    # Issue tokens
-    access_token = create_access_token(user.id, user.email)
+    access_token  = create_access_token(user.id, user.email)
     refresh_token = create_refresh_token(user.id)
 
-    # Store hash of refresh token — never the raw value
     user.refresh_token_hash = _hash_token(refresh_token)
     user.last_login = datetime.now(timezone.utc)
     await db.commit()
 
-    return TokenResponse(access_token=access_token, refresh_token=refresh_token)
+    # Set refresh token as httpOnly cookie — never exposed to JS
+    _set_refresh_cookie(response, refresh_token)
+
+    # Return only access token in body — frontend keeps in memory
+    return TokenResponse(access_token=access_token, refresh_token="")
 
 
 # ── Refresh ───────────────────────────────────────────────────────────────────
 @router.post("/refresh", response_model=TokenResponse)
 async def refresh(
-    body: RefreshRequest,
+    request: Request,
+    response: Response,
     db: AsyncSession = Depends(get_db),
 ):
-    payload = verify_token(body.refresh_token)
+    # Read refresh token from httpOnly cookie
+    refresh_token = request.cookies.get(COOKIE_NAME)
+    if not refresh_token:
+        raise HTTPException(status_code=401, detail="Invalid credentials")
+
+    payload = verify_token(refresh_token)
     if not payload or payload.get("type") != "refresh":
+        _clear_refresh_cookie(response)
         raise HTTPException(status_code=401, detail="Invalid credentials")
 
     import uuid
@@ -116,36 +142,39 @@ async def refresh(
     if not user or not user.is_active:
         raise HTTPException(status_code=401, detail="Invalid credentials")
 
-    # Token rotation theft detection — hash mismatch means token already used
-    submitted_hash = _hash_token(body.refresh_token)
+    submitted_hash = _hash_token(refresh_token)
     if user.refresh_token_hash != submitted_hash:
-        # Possible token theft — invalidate account
+        # Token theft detected — invalidate account
         user.is_active = False
         user.refresh_token_hash = None
         await db.commit()
+        _clear_refresh_cookie(response)
         raise HTTPException(
             status_code=401,
             detail="Session invalidated. Please log in again.",
         )
 
-    # Issue new token pair
-    new_access = create_access_token(user.id, user.email)
+    new_access  = create_access_token(user.id, user.email)
     new_refresh = create_refresh_token(user.id)
 
     user.refresh_token_hash = _hash_token(new_refresh)
     await db.commit()
 
-    return TokenResponse(access_token=new_access, refresh_token=new_refresh)
+    _set_refresh_cookie(response, new_refresh)
+
+    return TokenResponse(access_token=new_access, refresh_token="")
 
 
 # ── Logout ────────────────────────────────────────────────────────────────────
 @router.post("/logout")
 async def logout(
+    response: Response,
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
     current_user.refresh_token_hash = None
     await db.commit()
+    _clear_refresh_cookie(response)
     return {"message": "Logged out successfully"}
 
 

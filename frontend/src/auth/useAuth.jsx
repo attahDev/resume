@@ -1,6 +1,7 @@
 import { createContext, useContext, useState, useEffect } from 'react'
 import { login as apiLogin, logout as apiLogout, register as apiRegister, getMe } from '../api/auth.js'
-import { getAccessToken } from '../api/client.js'
+import { getAccessToken, setTokens, clearTokens } from '../api/client.js'
+import client from '../api/client.js'
 
 const AuthContext = createContext(null)
 
@@ -9,20 +10,38 @@ export function AuthProvider({ children }) {
   const [isAuthenticated, setIsAuthenticated] = useState(false)
   const [loading, setLoading]                 = useState(true)
 
-  // On mount: try to restore session if a token already exists in memory
+  // On mount: try to restore session
+  // 1. If access token in memory → fetch /me directly
+  // 2. If no access token → attempt silent refresh via httpOnly cookie
+  // 3. If both fail → user is a guest
   useEffect(() => {
-    if (getAccessToken()) {
-      getMe()
-        .then(u => { setUser(u); setIsAuthenticated(true) })
-        .catch(() => {})
-        .finally(() => setLoading(false))
-    } else {
-      setLoading(false)
+    async function restoreSession() {
+      try {
+        if (getAccessToken()) {
+          const u = await getMe()
+          setUser(u)
+          setIsAuthenticated(true)
+        } else {
+          // No token in memory — try silent refresh via cookie
+          const res = await client.post('/auth/refresh')
+          setTokens(res.data.access_token)
+          const u = await getMe()
+          setUser(u)
+          setIsAuthenticated(true)
+        }
+      } catch {
+        clearTokens()
+      } finally {
+        setLoading(false)
+      }
     }
+
+    restoreSession()
   }, [])
 
   async function login(email, password) {
-    await apiLogin(email, password)
+    const res = await apiLogin(email, password)
+    setTokens(res.access_token)
     const u = await getMe()
     setUser(u)
     setIsAuthenticated(true)
@@ -31,8 +50,8 @@ export function AuthProvider({ children }) {
 
   async function register(email, password) {
     await apiRegister(email, password)
-    // Auto-login after successful registration
-    await apiLogin(email, password)
+    const res = await apiLogin(email, password)
+    setTokens(res.access_token)
     const u = await getMe()
     setUser(u)
     setIsAuthenticated(true)
@@ -41,6 +60,7 @@ export function AuthProvider({ children }) {
 
   async function logout() {
     await apiLogout()
+    clearTokens()
     setUser(null)
     setIsAuthenticated(false)
   }

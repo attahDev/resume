@@ -2,7 +2,7 @@ import client, { setTokens, clearTokens } from './client.js'
 
 export async function login(email, password) {
   const res = await client.post('/auth/login', { email, password })
-  setTokens(res.data.access_token, res.data.refresh_token)
+  setTokens(res.data.access_token)  // ← only access token, refresh is in cookie
   return res.data
 }
 
@@ -12,7 +12,7 @@ export async function register(email, password) {
 }
 
 export async function logout() {
-  try { await client.post('/auth/logout') } catch { /* ignore network errors on logout */ }
+  try { await client.post('/auth/logout') } catch {}
   clearTokens()
 }
 

@@ -1,26 +1,25 @@
 /**
  * api/client.js
- * Axios instance — JWT tokens live in MEMORY only.
- * NEVER written to localStorage or sessionStorage.
- * withCredentials: true sends httpOnly gfp guest cookie automatically.
+ * Axios instance — access token in MEMORY only.
+ * Refresh token lives in httpOnly cookie — never accessible to JS.
+ * withCredentials: true sends cookies automatically on every request.
  */
 import axios from 'axios'
 
 const BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000'
 
-// ── In-memory token store ──────────────────────────────────
-let _accessToken  = null
-let _refreshToken = null
-let _refreshing   = null    // shared promise prevents concurrent refresh storms
+// ── In-memory access token store ──────────────────────────
+let _accessToken = null
+let _refreshing  = null   // shared promise prevents concurrent refresh storms
 
-export const setTokens      = (a, r) => { _accessToken = a; _refreshToken = r }
-export const clearTokens    = ()      => { _accessToken = null; _refreshToken = null }
-export const getAccessToken = ()      => _accessToken
+export const setTokens      = (a) => { _accessToken = a }
+export const clearTokens    = ()  => { _accessToken = null }
+export const getAccessToken = ()  => _accessToken
 
 // ── Axios instance ─────────────────────────────────────────
 const client = axios.create({
   baseURL: BASE_URL,
-  withCredentials: true,
+  withCredentials: true,   // sends httpOnly rt cookie automatically
   timeout: 30000,
 })
 
@@ -35,12 +34,13 @@ client.interceptors.response.use(
   res => res,
   async err => {
     const original = err.config
-    if (err.response?.status === 401 && !original._retry && _refreshToken) {
+    // Attempt silent refresh if 401 and not already retrying
+    if (err.response?.status === 401 && !original._retry) {
       original._retry = true
       if (!_refreshing) {
         _refreshing = client
-          .post('/auth/refresh', { refresh_token: _refreshToken })
-          .then(res => setTokens(res.data.access_token, res.data.refresh_token))
+          .post('/auth/refresh')   // no body — cookie is sent automatically
+          .then(res => { _accessToken = res.data.access_token })
           .catch(() => { clearTokens(); window.location.href = '/login' })
           .finally(() => { _refreshing = null })
       }
@@ -48,7 +48,9 @@ client.interceptors.response.use(
         await _refreshing
         original.headers['Authorization'] = `Bearer ${_accessToken}`
         return client(original)
-      } catch { return Promise.reject(err) }
+      } catch {
+        return Promise.reject(err)
+      }
     }
     return Promise.reject(err)
   }
