@@ -177,6 +177,7 @@ async def _call_with_retry(user_prompt: str) -> dict:
                 max_tokens=2000,
                 temperature=0.3,
                 response_format={"type": "json_object"},
+                timeout=30,
             )
 
             duration_ms = round((time.monotonic() - start) * 1000)

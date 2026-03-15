@@ -58,6 +58,15 @@ async def lifespan(app: FastAPI):
         await delete_expired_resume_text(db)
         await _recover_dead_jobs(db)
 
+   # Pre-warm NLP models so first analysis is fast
+    try:
+        from backend.services.nlp import get_nlp, get_embedder
+        get_nlp()
+        get_embedder()
+        logger.info("startup", extra={"action": "models_loaded"})
+    except Exception as e:
+        logger.warning("startup", extra={"action": "model_warmup_failed", "error": str(e)})
+
     logger.info("Resume Analyzer API started", extra={"env": settings.ENV})
     yield
     # ── Shutdown ─────────────────────────────────────────────────────────
