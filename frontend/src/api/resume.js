@@ -32,3 +32,7 @@ export async function compareAnalyses(baselineId, revisedId) {
   })
   return data
 }
+
+export async function deleteAnalysis(analysisId) {
+  await client.delete(`/results/${analysisId}`)
+}
