@@ -40,7 +40,7 @@ def _set_refresh_cookie(response: Response, token: str) -> None:
         key=COOKIE_NAME,
         value=token,
         httponly=True,
-        secure=settings.ENV == "production",
+        secure=True,
         samesite="lax",
         max_age=COOKIE_MAX_AGE,
         path="/auth",   # only sent to /auth/* endpoints
@@ -48,7 +48,7 @@ def _set_refresh_cookie(response: Response, token: str) -> None:
 
 
 def _clear_refresh_cookie(response: Response) -> None:
-    response.delete_cookie(key=COOKIE_NAME, path="/auth")
+    response.delete_cookie(key=COOKIE_NAME, path="/", samesite="none", secure=True)
 
 
 # ── Register ──────────────────────────────────────────────────────────────────
