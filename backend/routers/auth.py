@@ -41,7 +41,7 @@ def _set_refresh_cookie(response: Response, token: str) -> None:
         value=token,
         httponly=True,
         secure=True,
-        samesite="lax",
+        samesite="none",
         max_age=COOKIE_MAX_AGE,
         path="/auth",   # only sent to /auth/* endpoints
     )
