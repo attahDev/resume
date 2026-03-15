@@ -7,6 +7,7 @@ export default defineConfig({
   build: {
     outDir: 'dist',
     copyPublicDir: true,
+    sourcemap: false,
   },
   server: {
     port: 5173,
