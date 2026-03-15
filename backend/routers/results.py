@@ -1,8 +1,4 @@
-"""
-Results router — fetch analysis results by ID.
-IDOR protection: always scoped to owner.
-Supports polling for async results.
-"""
+
 import uuid
 import json
 import logging
@@ -31,11 +27,7 @@ async def get_results(
     current_user=Depends(get_optional_user),
     fingerprint_hash: str = Depends(get_guest_fingerprint_hash),
 ):
-    """
-    Fetch analysis results by ID.
-    Returns status immediately if still processing.
-    Frontend polls this every 2 seconds until status == 'complete'.
-    """
+   
     # Always scope to owner — prevents IDOR
     if current_user:
         result = await db.execute(
@@ -94,6 +86,7 @@ async def get_results(
         "quick_wins": recommendations.get("quick_wins", []),
         "ats_warning": recommendations.get("ats_warning"),
         "score_explanation": recommendations.get("score_explanation", ""),
+        "sections": recommendations.get("sections", []),
     }
 
 
@@ -105,10 +98,7 @@ async def get_history(
     current_user=Depends(get_optional_user),
     fingerprint_hash: str = Depends(get_guest_fingerprint_hash),
 ):
-    """
-    Return list of past analyses for the current user/guest.
-    Always scoped to owner.
-    """
+   
     if current_user:
         result = await db.execute(
             select(Analysis, JobDescription)

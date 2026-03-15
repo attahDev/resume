@@ -116,8 +116,7 @@ async def compare_analyses(
     dimensions_map = {
         "Skills Match":  ("skills_score",     baseline.skills_score,     revised.skills_score),
         "Experience":    ("experience_score",  baseline.experience_score,  revised.experience_score),
-        "Keywords":      ("keyword_score",     baseline.keyword_score,     revised.keyword_score),
-        "Education":     ("education_score",   baseline.education_score,   revised.education_score),
+        "Keywords":      ("keywords_score",     baseline.keywords_score,     revised.keywords_score),
     }
 
     dimensions: list[DimensionDelta] = []
@@ -141,8 +140,8 @@ async def compare_analyses(
     dropped_skills = sorted(b_skills - r_skills)
 
     # ── Gap diffs ──────────────────────────────────────────────────────────
-    b_gaps = set(_safe_list(baseline.skill_gaps))
-    r_gaps = set(_safe_list(revised.skill_gaps))
+    b_gaps = set(_safe_list(baseline.missing_skills))
+    r_gaps = set(_safe_list(revised.missing_skills))
 
     resolved_gaps   = sorted(b_gaps - r_gaps)   # gaps that disappeared
     remaining_gaps  = sorted(r_gaps)             # still present gaps
