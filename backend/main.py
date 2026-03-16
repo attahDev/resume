@@ -15,7 +15,7 @@ from backend.security.rate_limit import limiter, rate_limit_exceeded_handler
 from backend.middleware.logging import PIILoggingMiddleware
 from backend.middleware.cleanup import delete_expired_resume_text
 from backend.middleware.guest_cookie import GuestCookieMiddleware
-from backend.routers import auth, upload, analyze, results, history
+from backend.routers import auth, upload, analyze, results, history, auth_reset
 from backend.database import Base
 import backend.models  # noqa: F401
 from backend.routers.compare import router as compare_router
@@ -58,7 +58,7 @@ async def lifespan(app: FastAPI):
         await delete_expired_resume_text(db)
         await _recover_dead_jobs(db)
 
-   # Pre-warm NLP models so first analysis is fast
+    # Pre-warm NLP models so first analysis is fast
     try:
         from backend.services.nlp import get_nlp, get_embedder
         get_nlp()
@@ -114,7 +114,7 @@ app.include_router(upload.router, prefix="/upload", tags=["upload"])
 app.include_router(analyze.router, prefix="", tags=["analyze"])
 app.include_router(results.router, prefix="", tags=["results"])
 app.include_router(history.router, prefix="", tags=["history"])
-
+app.include_router(auth_reset.router)
 
 # ── Health check ─────────────────────────────────────────────────────────────
 @app.get("/health", tags=["health"])
