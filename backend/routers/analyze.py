@@ -1,4 +1,3 @@
-
 import uuid
 import logging
 from datetime import datetime, timezone, date
@@ -8,12 +7,8 @@ from backend.services.scorer import run_full_score
 import json
 from fastapi import APIRouter, Depends, HTTPException, Request, BackgroundTasks
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, update
+from sqlalchemy import select, update, delete as sql_delete
 
-from backend.services.llm import get_llm_analysis, _call_with_retry
-import importlib
-import backend.services.llm as llm_module
-importlib.reload(llm_module)
 from backend.services.llm import get_llm_analysis
 from backend.database import get_db, AsyncSessionLocal
 from backend.models.analysis import Analysis
@@ -45,7 +40,6 @@ async def analyze(
 ):
     # ── Step 1: determine caller and enforce limits ───────────────────────────
     if current_user:
-        # Reset daily count if date has changed
         today = date.today()
         if current_user.daily_reset_date != today:
             current_user.daily_analyses_count = 0
@@ -65,14 +59,13 @@ async def analyze(
         owner_id = str(current_user.id)
 
     else:
-        # Guest flow
         session = await get_or_create_guest_session(fingerprint_hash, db)
         if await check_guest_limit(session):
             raise HTTPException(
                 status_code=429,
                 detail={
                     "error": f"You have used all {settings.GUEST_LIFETIME_LIMIT} free guest analyses.",
-                    "message": "Create a free account for {settings.DAILY_FREE_LIMIT} analyses per day.",
+                    "message": f"Create a free account for {settings.DAILY_FREE_LIMIT} analyses per day.",
                     "action": "register",
                 },
             )
@@ -96,7 +89,6 @@ async def analyze(
 
     resume = resume_result.scalar_one_or_none()
     if not resume:
-        # Return 403 not 404 — do not reveal existence of other resumes
         raise HTTPException(status_code=403, detail="Resume not found or access denied.")
 
     # ── Step 3: sanitise and store job description ────────────────────────────
@@ -124,14 +116,16 @@ async def analyze(
     cache_key = generate_cache_key(
         str(body.resume_id), str(job.id), owner_id, settings.MODEL_VERSION
     )
+
+    # Return completed cached analysis
     cached = await get_cached(db, cache_key, owner_id)
     if cached:
         logger.info("analyze", extra={"action": "cache_hit"})
         return {
-            "analysis_id": str(cached.id),
-            "status": cached.status,
-            "overall_score": cached.overall_score,
-            "skills_score": cached.skills_score,
+            "analysis_id":    str(cached.id),
+            "status":         cached.status,
+            "overall_score":  cached.overall_score,
+            "skills_score":   cached.skills_score,
             "experience_score": cached.experience_score,
             "keywords_score": cached.keywords_score,
             "matched_skills": cached.matched_skills,
@@ -139,6 +133,22 @@ async def analyze(
             "recommendations": cached.recommendations,
             "cached": True,
         }
+
+    # Delete any stale failed or pending rows with this cache_key
+    # so we can insert a fresh analysis without hitting the unique constraint
+    stale_result = await db.execute(
+        select(Analysis).where(
+            Analysis.cache_key == cache_key,
+            Analysis.status.in_(["failed", "pending"]),
+        )
+    )
+    stale = stale_result.scalar_one_or_none()
+    if stale:
+        await db.execute(
+            sql_delete(Analysis).where(Analysis.id == stale.id)
+        )
+        await db.commit()
+        logger.info("analyze", extra={"action": "stale_deleted", "status": stale.status})
 
     # ── Step 5: create analysis row and queue background task ─────────────────
     analysis = Analysis(
@@ -152,7 +162,6 @@ async def analyze(
     )
     db.add(analysis)
 
-    # Increment usage counters
     if current_user:
         current_user.daily_analyses_count += 1
     else:
@@ -161,7 +170,6 @@ async def analyze(
     await db.commit()
     await db.refresh(analysis)
 
-    # Queue background processing
     background_tasks.add_task(
         process_analysis,
         str(analysis.id),
@@ -184,16 +192,8 @@ async def process_analysis(
     is_guest: bool,
     jd_text: str,
 ):
-    """
-    Runs in background — decrypts resume, scores, calls LLM, saves results.
-    Clears resume text from memory after use.
-    Handles retries and marks as failed after 3 attempts.
-    """
-
-
     async with AsyncSessionLocal() as db:
         try:
-            # Fetch analysis row
             result = await db.execute(
                 select(Analysis).where(Analysis.id == uuid.UUID(analysis_id))
             )
@@ -201,12 +201,10 @@ async def process_analysis(
             if not analysis:
                 return
 
-            # Mark as processing
             analysis.status = "processing"
             analysis.last_attempted = datetime.now(timezone.utc)
             await db.commit()
 
-            # Fetch resume — owner scoped
             if is_guest:
                 resume_result = await db.execute(
                     select(Resume).where(
@@ -228,39 +226,32 @@ async def process_analysis(
                 await db.commit()
                 return
 
-            # Decrypt resume text
             resume_text = decrypt_text(resume.encrypted_text)
-
-            # Run local NLP scoring
             scorer_result = run_full_score(resume_text, jd_text)
-
-            # Run LLM analysis — skills only, no PII
             llm_result = await get_llm_analysis(scorer_result, jd_text)
 
-            # Merge recommendations from LLM
+            # Save all fields including sections
             recommendations = json.dumps({
                 "overall_assessment": llm_result.get("overall_assessment", ""),
-                "top_strengths": llm_result.get("top_strengths", []),
-                "critical_gaps": llm_result.get("critical_gaps", []),
-                "quick_wins": llm_result.get("quick_wins", []),
-                "ats_warning": llm_result.get("ats_warning"),
-                "score_explanation": llm_result.get("score_explanation", ""),
+                "top_strengths":      llm_result.get("top_strengths", []),
+                "critical_gaps":      llm_result.get("critical_gaps", []),
+                "quick_wins":         llm_result.get("quick_wins", []),
+                "ats_warning":        llm_result.get("ats_warning"),
+                "score_explanation":  llm_result.get("score_explanation", ""),
+                "sections":           llm_result.get("sections", []),
             })
 
-            # Save results
             analysis.status = "complete"
-            analysis.overall_score = scorer_result["overall_score"]
-            analysis.skills_score = scorer_result["skills_score"]
+            analysis.overall_score    = scorer_result["overall_score"]
+            analysis.skills_score     = scorer_result["skills_score"]
             analysis.experience_score = scorer_result["experience_score"]
-            analysis.keywords_score = scorer_result["keywords_score"]
-            analysis.matched_skills = scorer_result["matched_skills"]
-            analysis.missing_skills = scorer_result["missing_skills"]
-            analysis.recommendations = recommendations
+            analysis.keywords_score   = scorer_result["keywords_score"]
+            analysis.matched_skills   = scorer_result["matched_skills"]
+            analysis.missing_skills   = scorer_result["missing_skills"]
+            analysis.recommendations  = recommendations
             await db.commit()
 
-            # Clear resume text from memory
             resume_text = None
-
             logger.info("analysis_complete", extra={"analysis_id": analysis_id})
 
         except Exception as e:

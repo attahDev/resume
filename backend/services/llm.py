@@ -1,4 +1,3 @@
-
 import asyncio
 import logging
 import time
@@ -11,7 +10,6 @@ from backend.config import settings
 
 logger = logging.getLogger("resume_analyzer")
 
-# ── Singleton client ──────────────────────────────────────────────────────────
 _client = None
 
 
@@ -26,7 +24,6 @@ def get_client():
     return _client
 
 
-# ── System prompt ─────────────────────────────────────────────────────────────
 SYSTEM_PROMPT = """
 You are an expert career coach specialising in helping African tech professionals
 land roles at both local companies (Flutterwave, Paystack, Andela, MTN Digital,
@@ -54,7 +51,6 @@ Respond ONLY with a valid JSON object. No preamble. No explanation. JSON only.
 """.strip()
 
 
-# ── Fallback response ─────────────────────────────────────────────────────────
 FALLBACK_RESPONSE = {
     "overall_assessment": "Analysis unavailable — please retry.",
     "quick_wins": [],
@@ -64,7 +60,6 @@ FALLBACK_RESPONSE = {
 }
 
 
-# ── Main analysis function ────────────────────────────────────────────────────
 async def get_llm_analysis(scorer_result: dict, jd_text: str) -> dict:
 
     load_dotenv(override=True)
@@ -157,10 +152,6 @@ Return ONLY this exact JSON structure — no other text, no markdown:
 
 
 async def _call_with_retry(user_prompt: str) -> dict:
-    """
-    Call Groq API with up to 3 retries and exponential backoff.
-    Logs attempt number, model, token usage, duration — never prompt content.
-    """
     last_error = None
     backoff_seconds = [1, 2, 4]
 
@@ -174,10 +165,10 @@ async def _call_with_retry(user_prompt: str) -> dict:
                     {"role": "system", "content": SYSTEM_PROMPT},
                     {"role": "user",   "content": user_prompt},
                 ],
-                max_tokens=2000,
+                max_tokens=1400,
                 temperature=0.3,
                 response_format={"type": "json_object"},
-                timeout=30,
+                timeout=45,
             )
 
             duration_ms = round((time.monotonic() - start) * 1000)
@@ -211,10 +202,6 @@ async def _call_with_retry(user_prompt: str) -> dict:
 
 
 def _parse_response(raw: str, attempt: int) -> dict:
-    """
-    Parse JSON response from LLM.
-    Falls back to FALLBACK_RESPONSE on parse failure.
-    """
     if not raw:
         return FALLBACK_RESPONSE
 

@@ -2,10 +2,10 @@ import { useEffect, useRef, useState } from 'react'
 import { getResult } from '../api/resume.js'
 
 const PHASES = [
-  { until: 3,  label: 'Parsing your resume...' },
-  { until: 6,  label: 'Extracting skills...' },
-  { until: 10, label: 'Running AI analysis...' },
-  { until: 90, label: 'Finalising results...' },
+  { until: 3,   label: 'Parsing your resume...' },
+  { until: 6,   label: 'Extracting skills...' },
+  { until: 10,  label: 'Running AI analysis...' },
+  { until: 150, label: 'Finalising results...' },
 ]
 
 const STEPS = ['Parsing resume', 'Extracting skills', 'Scoring match', 'AI coaching']
@@ -23,7 +23,7 @@ export default function StatusPoller({ analysisId, onComplete }) {
     timerRef.current = setInterval(() => {
       const s = (Date.now() - startRef.current) / 1000
       setElapsed(s)
-      if (s > 90) { setTimedOut(true); clearInterval(timerRef.current) }
+      if (s > 150) { setTimedOut(true); clearInterval(timerRef.current) }
     }, 300)
 
     // API poll every 2s
@@ -52,10 +52,12 @@ export default function StatusPoller({ analysisId, onComplete }) {
     return (
       <div style={{ padding: '48px 0', textAlign: 'center' }}>
         <p style={{ color: 'var(--red)', marginBottom: 20, fontSize: 13 }}>
-          {timedOut ? 'Analysis timed out after 90 seconds.' : 'Analysis failed on the server.'}
+          {timedOut
+            ? 'Analysis is taking longer than expected. Please try again.'
+            : 'Analysis failed on the server. Please try again.'}
         </p>
         <button className="btn btn-primary" onClick={() => window.location.reload()}>
-          ↩ Start over
+          ↩ Try again
         </button>
       </div>
     )
@@ -90,10 +92,17 @@ export default function StatusPoller({ analysisId, onComplete }) {
                 transition: 'opacity 0.5s ease',
               }}
             >
-              <span style={{ width: 16, textAlign: 'center', fontSize: 12, color: done ? 'var(--green)' : active ? 'var(--text-dim)' : 'var(--text-ghost)' }}>
+              <span style={{
+                width: 16, textAlign: 'center', fontSize: 12,
+                color: done ? 'var(--green)' : active ? 'var(--text-dim)' : 'var(--text-ghost)',
+              }}>
                 {done ? '✓' : active ? '›' : '○'}
               </span>
-              <span style={{ fontSize: 12, color: done ? 'var(--text)' : active ? 'var(--text-dim)' : 'var(--text-ghost)', transition: 'color 0.4s' }}>
+              <span style={{
+                fontSize: 12,
+                color: done ? 'var(--text)' : active ? 'var(--text-dim)' : 'var(--text-ghost)',
+                transition: 'color 0.4s',
+              }}>
                 {step}
               </span>
             </div>
