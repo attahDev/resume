@@ -82,7 +82,6 @@ app = FastAPI(
 )
 
 
-app.include_router(compare_router)
 # ── State for slowapi ────────────────────────────────────────────────────────
 app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, rate_limit_exceeded_handler)
@@ -112,6 +111,7 @@ app.add_middleware(
 app.include_router(auth.router, prefix="/auth", tags=["auth"])
 app.include_router(upload.router, prefix="/upload", tags=["upload"])
 app.include_router(analyze.router, prefix="", tags=["analyze"])
+app.include_router(compare_router)   # prefix="/analyze" declared inside the router
 app.include_router(results.router, prefix="", tags=["results"])
 app.include_router(history.router, prefix="", tags=["history"])
 app.include_router(auth_reset.router)
