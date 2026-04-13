@@ -134,21 +134,22 @@ async def analyze(
             "cached": True,
         }
 
-    # Delete any stale failed or pending rows with this cache_key
-    # so we can insert a fresh analysis without hitting the unique constraint
+    # Delete ALL stale failed/pending rows with this cache_key
+    # scalar_one_or_none would raise MultipleResultsFound if two stale rows exist
     stale_result = await db.execute(
         select(Analysis).where(
             Analysis.cache_key == cache_key,
             Analysis.status.in_(["failed", "pending"]),
         )
     )
-    stale = stale_result.scalar_one_or_none()
-    if stale:
+    stale_rows = stale_result.scalars().all()
+    for stale in stale_rows:
         await db.execute(
             sql_delete(Analysis).where(Analysis.id == stale.id)
         )
-        await db.commit()
         logger.info("analyze", extra={"action": "stale_deleted", "status": stale.status})
+    if stale_rows:
+        await db.commit()
 
     # ── Step 5: create analysis row and queue background task ─────────────────
     analysis = Analysis(
@@ -162,9 +163,10 @@ async def analyze(
     )
     db.add(analysis)
 
-    if current_user:
-        current_user.daily_analyses_count += 1
-    else:
+    # NOTE: daily_analyses_count is incremented inside process_analysis on
+    # success — not here — so a failed background task doesn't burn a slot.
+    # Guest count still increments here because check_guest_limit already ran.
+    if not current_user:
         await increment_guest_count(session, db)
 
     await db.commit()
@@ -178,6 +180,7 @@ async def analyze(
         owner_id,
         current_user is None,
         clean_jd,
+        str(current_user.id) if current_user else None,
     )
 
     return {"analysis_id": str(analysis.id), "status": "pending"}
@@ -191,6 +194,7 @@ async def process_analysis(
     owner_id: str,
     is_guest: bool,
     jd_text: str,
+    user_id: str | None = None,      # needed to increment daily count on success
 ):
     async with AsyncSessionLocal() as db:
         try:
@@ -249,6 +253,23 @@ async def process_analysis(
             analysis.matched_skills   = scorer_result["matched_skills"]
             analysis.missing_skills   = scorer_result["missing_skills"]
             analysis.recommendations  = recommendations
+
+            # ── Increment daily count only on success ─────────────────────
+            # This way a failed analysis doesn't consume the user's quota.
+            if not is_guest and user_id:
+                from backend.models.user import User
+                from datetime import date
+                user_result = await db.execute(
+                    select(User).where(User.id == uuid.UUID(user_id))
+                )
+                user = user_result.scalar_one_or_none()
+                if user:
+                    today = date.today()
+                    if user.daily_reset_date != today:
+                        user.daily_analyses_count = 0
+                        user.daily_reset_date = today
+                    user.daily_analyses_count += 1
+
             await db.commit()
 
             resume_text = None
