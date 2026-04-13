@@ -2,7 +2,9 @@ import client, { setTokens, clearTokens } from './client.js'
 
 export async function login(email, password) {
   const res = await client.post('/auth/login', { email, password })
-  setTokens(res.data.access_token)  // ← only access token, refresh is in cookie
+  // NOTE: do NOT call setTokens here — useAuth.login() is the single source of truth.
+  // Calling it here AND in useAuth caused a double-set where the second call
+  // used res.access_token (undefined) instead of res.data.access_token.
   return res.data
 }
 
