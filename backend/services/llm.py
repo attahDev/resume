@@ -1,8 +1,6 @@
 import asyncio
 import logging
 import time
-from dotenv import load_dotenv
-import os
 import json
 from openai import AsyncOpenAI
 from openai import RateLimitError, APIStatusError, APIConnectionError
@@ -16,9 +14,9 @@ _client = None
 def get_client():
     global _client
     if _client is None:
-        load_dotenv(override=True)
+        # Use settings — already loaded from .env by pydantic-settings at startup
         _client = AsyncOpenAI(
-            api_key=os.getenv("GROQ_API_KEY"),
+            api_key=settings.GROQ_API_KEY,
             base_url=settings.LLM_BASE_URL,
         )
     return _client
@@ -62,8 +60,8 @@ FALLBACK_RESPONSE = {
 
 async def get_llm_analysis(scorer_result: dict, jd_text: str) -> dict:
 
-    load_dotenv(override=True)
-    api_key = os.getenv("GROQ_API_KEY", "")
+    # settings already validated at startup — no need for os.getenv
+    api_key = settings.GROQ_API_KEY
     if not api_key or api_key == "placeholder":
         logger.warning("llm", extra={"action": "skipped_no_api_key"})
         return FALLBACK_RESPONSE
