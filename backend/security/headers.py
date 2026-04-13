@@ -23,7 +23,6 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
         )
 
         # Remove server fingerprinting header
-# REPLACE with:
         if "server" in response.headers:
             del response.headers["server"]
         if "Server" in response.headers:
