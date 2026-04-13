@@ -16,7 +16,6 @@ from backend.models.analysis import Analysis
 from backend.security.auth import get_optional_user
 from backend.middleware.guest_cookie import get_guest_fingerprint_hash
 from backend.security.rate_limit import limiter
-from backend.models.job import JobDescription
 
 logger = logging.getLogger("resume_analyzer")
 router = APIRouter()
@@ -137,47 +136,6 @@ async def delete_analysis(
     return Response(status_code=204)
 
 
-@router.get("/history")
-@limiter.limit("30/hour")
-async def get_history(
-    request: Request,
-    db: AsyncSession = Depends(get_db),
-    current_user=Depends(get_optional_user),
-    fingerprint_hash: str = Depends(get_guest_fingerprint_hash),
-):
-    """
-    Return list of past analyses for the current user/guest.
-    Always scoped to owner.
-    """
-    if current_user:
-        result = await db.execute(
-            select(Analysis, JobDescription)
-            .join(JobDescription, Analysis.job_id == JobDescription.id)
-            .where(Analysis.user_id == current_user.id)
-            .order_by(Analysis.created_at.desc())
-            .limit(50)
-        )
-    else:
-        result = await db.execute(
-            select(Analysis, JobDescription)
-            .join(JobDescription, Analysis.job_id == JobDescription.id)
-            .where(Analysis.guest_fingerprint == fingerprint_hash)
-            .order_by(Analysis.created_at.desc())
-            .limit(10)
-        )
-
-    rows = result.all()
-
-    return {
-        "analyses": [
-            {
-                "analysis_id":  str(a.id),
-                "status":       a.status,
-                "overall_score": a.overall_score,
-                "job_title":    j.title,
-                "company":      j.company,
-                "created_at":   a.created_at.isoformat() if a.created_at else None,
-            }
-            for a, j in rows
-        ]
-    }
+# NOTE: /history is handled exclusively by routers/history.py
+# It was removed from here to fix the duplicate route bug where
+# results.router (registered first in main.py) was shadowing history.router.
