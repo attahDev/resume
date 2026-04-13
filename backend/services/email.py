@@ -13,8 +13,8 @@ logger = logging.getLogger(__name__)
 # but we set it explicitly for clarity.
 resend.api_key = os.getenv("RESEND_API_KEY", "")
 
-EMAIL_FROM   = os.getenv("EMAIL_FROM",   "ResumeAI <noreply@resumeai.onrender.com>")
-FRONTEND_URL = os.getenv("FRONTEND_URL", "https://resumeai-frontend.onrender.com")
+EMAIL_FROM   = os.getenv("EMAIL_FROM",   "CVMatch <noreply@cvmatch.app>")
+FRONTEND_URL = os.getenv("FRONTEND_URL", "https://resume-ai-ten-umber.vercel.app")
 
 
 def _reset_email_html(reset_url: str) -> str:
@@ -25,7 +25,7 @@ def _reset_email_html(reset_url: str) -> str:
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Reset your password — ResumeAI</title>
+  <title>Reset your password — CVMatch</title>
 </head>
 <body style="margin:0;padding:0;background:#0a0a0a;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;">
 
