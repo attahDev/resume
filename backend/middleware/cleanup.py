@@ -12,10 +12,12 @@ logger = logging.getLogger("resume_analyzer")
 async def delete_expired_resume_text(db: AsyncSession) -> None:
     now = datetime.now(timezone.utc)
 
+    # FIX 7: filter on text_deleted boolean flag instead of comparing encrypted_text
+    # to the "[DELETED]" string sentinel, which was fragile and error-prone.
     result = await db.execute(
         select(Resume.id).where(
             Resume.raw_text_expires < now,
-            Resume.encrypted_text != "[DELETED]",
+            Resume.text_deleted == False,   # noqa: E712 — SQLAlchemy requires == not `is`
         )
     )
     expired_ids = result.scalars().all()
@@ -26,7 +28,10 @@ async def delete_expired_resume_text(db: AsyncSession) -> None:
     await db.execute(
         update(Resume)
         .where(Resume.id.in_(expired_ids))
-        .values(encrypted_text="[DELETED]")
+        .values(
+            encrypted_text="",   # clear the ciphertext
+            text_deleted=True,   # set the flag — no more string sentinels
+        )
     )
     await db.commit()
 
