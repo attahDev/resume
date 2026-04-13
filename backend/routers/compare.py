@@ -70,8 +70,9 @@ async def _fetch_owned(
     db: AsyncSession,
     label: str,
 ) -> Analysis:
+    # Pass analysis_id as UUID (not str) — asyncpg requires UUID type for Uuid columns
     result = await db.execute(
-        select(Analysis).where(Analysis.id == str(analysis_id))
+        select(Analysis).where(Analysis.id == analysis_id)
     )
     analysis = result.scalar_one_or_none()
 
