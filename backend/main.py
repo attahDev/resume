@@ -48,9 +48,36 @@ async def _recover_dead_jobs(db) -> None:
         logger.info("startup", extra={"dead_jobs_recovered": len(dead_ids)})
 
 
+def _run_migrations() -> None:
+    """Run any pending Alembic migrations on startup.
+
+    Safe to call on every boot — Alembic tracks which migrations have already
+    run in the alembic_version table and skips them automatically.
+    This removes the need to run 'alembic upgrade head' manually.
+    """
+    import subprocess
+    import sys
+    try:
+        result = subprocess.run(
+            [sys.executable, "-m", "alembic", "upgrade", "head"],
+            capture_output=True,
+            text=True,
+            check=True,
+        )
+        logger.info("startup", extra={"action": "migrations_ok", "output": result.stdout.strip()})
+    except subprocess.CalledProcessError as e:
+        # Log but don't crash — app can still serve if DB is already up to date
+        logger.error("startup", extra={"action": "migration_failed", "error": e.stderr.strip()})
+
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # ── Startup ──────────────────────────────────────────────────────────
+
+    # Run pending Alembic migrations before anything else touches the DB.
+    # Alembic skips migrations it has already applied, so this is always safe.
+    _run_migrations()
+
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
 
