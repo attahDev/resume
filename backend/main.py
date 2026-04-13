@@ -22,9 +22,6 @@ from backend.routers.compare import router as compare_router
 from backend.models.analysis import Analysis
 
 
-
-
-
 logger = logging.getLogger("resume_analyzer")
 
 
@@ -51,36 +48,66 @@ async def _recover_dead_jobs(db) -> None:
 def _run_migrations() -> None:
     """Run any pending Alembic migrations on startup.
 
-    Safe to call on every boot — Alembic tracks which migrations have already
-    run in the alembic_version table and skips them automatically.
-    This removes the need to run 'alembic upgrade head' manually.
+    Safe to call on every boot — Alembic tracks which migrations already ran
+    in the alembic_version table and skips them automatically.
     """
     import subprocess
     import sys
+    from pathlib import Path
+
+    # Alembic must run from the directory containing alembic.ini.
+    # On Render the workdir is /app. Resolve explicitly so it works anywhere.
+    project_root = Path(__file__).parent.parent  # backend/../ -> /app
+    alembic_ini  = project_root / "alembic.ini"
+
+    if not alembic_ini.exists():
+        project_root = Path.cwd()
+        alembic_ini  = project_root / "alembic.ini"
+
+    if not alembic_ini.exists():
+        logger.error("startup", extra={
+            "action": "migration_skipped",
+            "reason": "alembic.ini not found",
+            "cwd": str(Path.cwd()),
+        })
+        return
+
     try:
         result = subprocess.run(
             [sys.executable, "-m", "alembic", "upgrade", "head"],
             capture_output=True,
             text=True,
             check=True,
+            cwd=str(project_root),  # critical: alembic must run from project root
         )
-        logger.info("startup", extra={"action": "migrations_ok", "output": result.stdout.strip()})
+        logger.info("startup", extra={
+            "action": "migrations_ok",
+            "output": result.stdout.strip(),
+        })
     except subprocess.CalledProcessError as e:
-        # Log but don't crash — app can still serve if DB is already up to date
-        logger.error("startup", extra={"action": "migration_failed", "error": e.stderr.strip()})
+        # Raise so startup fails loudly — better than booting with wrong schema
+        logger.error("startup", extra={
+            "action": "migration_failed",
+            "stderr": e.stderr.strip(),
+            "stdout": e.stdout.strip(),
+        })
+        raise RuntimeError(f"Alembic migration failed:\n{e.stderr}") from e
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # ── Startup ──────────────────────────────────────────────────────────
 
-    # Run pending Alembic migrations before anything else touches the DB.
-    # Alembic skips migrations it has already applied, so this is always safe.
+    # 1. Run migrations FIRST — before any other DB interaction.
+    #    Alembic skips already-applied migrations, so this is always safe.
     _run_migrations()
 
+    # 2. create_all covers any tables not managed by Alembic (e.g. new ones
+    #    added directly to models before a migration is written)
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
 
+    # 3. Housekeeping — safe now that schema is guaranteed up to date
     async with AsyncSessionLocal() as db:
         await delete_expired_resume_text(db)
         await _recover_dead_jobs(db)
@@ -132,9 +159,6 @@ app.add_middleware(
 )
 
 # ── Routers ──────────────────────────────────────────────────────────────────
-# Stubs included; fully implemented in later phases
-
-
 app.include_router(auth.router, prefix="/auth", tags=["auth"])
 app.include_router(upload.router, prefix="/upload", tags=["upload"])
 app.include_router(analyze.router, prefix="", tags=["analyze"])
