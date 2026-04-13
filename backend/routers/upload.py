@@ -1,16 +1,14 @@
-
-
 import logging
 from datetime import datetime, timezone, timedelta
 
-from fastapi import APIRouter, Depends, File, UploadFile, Request
+from fastapi import APIRouter, Depends, File, HTTPException, UploadFile, Request
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 
 from backend.database import get_db
 from backend.models.resume import Resume
 from backend.security.file_guard import validate_upload
-from backend.security.encryption import encrypt_text
+from backend.security.encryption import encrypt_text, decrypt_text
 from backend.security.auth import get_optional_user
 from backend.middleware.guest_cookie import get_guest_fingerprint_hash
 from backend.services.parser import extract_text_from_file, generate_file_hash
@@ -64,26 +62,29 @@ async def upload_resume(
 
     cached = existing.scalar_one_or_none()
     if cached:
-        logger.info("upload", extra={"action": "cache_hit"})
-        # Decrypt just enough for preview — not stored
-        from backend.security.encryption import decrypt_text
-        try:
-            preview_text = decrypt_text(cached.encrypted_text)[:150]
-        except ValueError:
-            preview_text = ""
-        return {
-            "resume_id": str(cached.id),
-            "file_name": cached.file_name,
-            "char_count": len(preview_text),
-            "preview": preview_text,
-            "cached": True,
-        }
+        # FIX 7: respect text_deleted flag — if text was cleaned up, re-extract
+        # instead of trying to decrypt an empty string and returning a blank preview.
+        if cached.text_deleted:
+            logger.info("upload", extra={"action": "cache_hit_text_expired_reextract"})
+            # Fall through to re-extract — do NOT return the deleted cached row
+        else:
+            logger.info("upload", extra={"action": "cache_hit"})
+            try:
+                preview_text = decrypt_text(cached.encrypted_text)[:150]
+            except ValueError:
+                preview_text = ""
+            return {
+                "resume_id": str(cached.id),
+                "file_name": cached.file_name,
+                "char_count": len(preview_text),
+                "preview": preview_text,
+                "cached": True,
+            }
 
     # Step 6 — extract text from file
     extracted_text = await extract_text_from_file(file_bytes, detected_mime)
 
     if len(extracted_text.strip()) < 50:
-        from fastapi import HTTPException
         raise HTTPException(
             status_code=422,
             detail="Could not extract readable text from this file. Please ensure it is not blank or image-only.",
@@ -92,18 +93,28 @@ async def upload_resume(
     # Step 7 — encrypt before saving
     encrypted = encrypt_text(extracted_text)
 
-    # Step 8 — save Resume row
-    resume = Resume(
-        user_id=current_user.id if current_user else None,
-        guest_fingerprint=guest_fp,
-        encrypted_text=encrypted,
-        file_hash=file_hash,
-        file_name=file.filename or "resume",
-        raw_text_expires=datetime.now(timezone.utc) + timedelta(hours=24),
-    )
-    db.add(resume)
-    await db.commit()
-    await db.refresh(resume)
+    # Step 8 — if we have a cached row but its text was deleted, refresh it in-place
+    if cached and cached.text_deleted:
+        cached.encrypted_text = encrypted
+        cached.text_deleted = False
+        cached.raw_text_expires = datetime.now(timezone.utc) + timedelta(hours=24)
+        await db.commit()
+        await db.refresh(cached)
+        resume = cached
+    else:
+        # Step 8b — save new Resume row
+        resume = Resume(
+            user_id=current_user.id if current_user else None,
+            guest_fingerprint=guest_fp,
+            encrypted_text=encrypted,
+            file_hash=file_hash,
+            file_name=file.filename or "resume",
+            raw_text_expires=datetime.now(timezone.utc) + timedelta(hours=24),
+            text_deleted=False,
+        )
+        db.add(resume)
+        await db.commit()
+        await db.refresh(resume)
 
     logger.info("upload", extra={"action": "resume_saved"})
 
