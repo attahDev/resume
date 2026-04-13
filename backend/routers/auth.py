@@ -89,14 +89,17 @@ async def login(
     result = await db.execute(select(User).where(User.email == body.email.lower()))
     user = result.scalar_one_or_none()
 
+    # Always delay on any auth failure — prevents email enumeration via timing
     if not user:
         await asyncio.sleep(0.1)
         raise HTTPException(status_code=401, detail="Invalid credentials")
 
     if not verify_password(body.password, user.hashed_password):
+        await asyncio.sleep(0.1)
         raise HTTPException(status_code=401, detail="Invalid credentials")
 
     if not user.is_active:
+        await asyncio.sleep(0.1)
         raise HTTPException(status_code=401, detail="Invalid credentials")
 
     access_token  = create_access_token(user.id, user.email)
