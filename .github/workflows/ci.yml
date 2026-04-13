@@ -1,0 +1,101 @@
+name: CI / Security Audit
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main]
+
+jobs:
+  # ── 1. Security audit ──────────────────────────────────────
+  security:
+    name: pip-audit CVE scan
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Install torch CPU first
+        run: |
+          pip install torch==2.3.1+cpu \
+            --extra-index-url https://download.pytorch.org/whl/cpu
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run pip-audit
+        run: |
+          pip install pip-audit
+          pip-audit --strict
+
+  # ── 2. Lint ────────────────────────────────────────────────
+  lint:
+    name: Ruff lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Run Ruff
+        run: |
+          pip install ruff
+          ruff check backend/
+
+  # ── 3. Tests ───────────────────────────────────────────────
+  test:
+    name: Pytest
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Install torch CPU first
+        run: |
+          pip install torch==2.3.1+cpu \
+            --extra-index-url https://download.pytorch.org/whl/cpu
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run tests
+        env:
+          DATABASE_URL: sqlite+aiosqlite:///./test.db
+          SECRET_KEY: ci-test-secret-key-at-least-32-chars!!
+          ENCRYPTION_KEY: ${{ secrets.CI_ENCRYPTION_KEY }}
+          GROQ_API_KEY: placeholder
+          ENVIRONMENT: test
+        run: |
+          python -m pytest backend/tests/ -v --tb=short
+
+  # ── 4. Docker build check ──────────────────────────────────
+  docker-build:
+    name: Docker build (no push)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build image (cache only — no push)
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: false
+          tags: resumeai:ci
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
