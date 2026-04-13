@@ -25,8 +25,15 @@ class GuestCookieMiddleware(BaseHTTPMiddleware):
                 key="gfp",
                 value=raw_fp,
                 httponly=True,
-                samesite="lax",
-                secure=(settings.ENV == "production"),
+                # FIX: was samesite="lax" which blocks cookies on cross-site POST requests.
+                # Frontend is on Vercel, backend is on Render — they are cross-site.
+                # "lax" meant the gfp cookie was set on page load but never sent back on
+                # /upload/resume or /analyze POST calls, so the backend generated a fresh
+                # fingerprint each time and couldn't match the uploaded resume.
+                # Must be "none" (with secure=True) to work cross-site, same as the
+                # refresh token cookie.
+                samesite="none",
+                secure=True,   # required by browsers when samesite="none"
                 max_age=2_592_000,  # 30 days
             )
 
