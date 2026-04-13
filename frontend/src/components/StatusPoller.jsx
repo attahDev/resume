@@ -64,7 +64,7 @@ export default function StatusPoller({ analysisId, onComplete }) {
   }
 
   const phase = PHASES.find(p => elapsed < p.until) || PHASES[PHASES.length - 1]
-  const pct   = Math.min(95, (elapsed / 15) * 100)
+  const pct   = Math.min(95, (elapsed / 150) * 100)
 
   return (
     <div style={{ padding: '40px 0' }}>
